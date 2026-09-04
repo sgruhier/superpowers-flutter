@@ -42,9 +42,9 @@ Opinions baked in:
 - Deprecated `commands/` from the Ruby fork.
 - Riverpod, Provider, GetX, or any non-Bloc state management.
 
-## Skill inventory (33)
+## Skill inventory (31)
 
-### A. Process skills — copied from superpowers-ruby, renamed only (19)
+### A. Process skills — copied from superpowers-ruby, renamed only (18)
 
 Text substitution `superpowers-ruby:` → `superpowers-flutter:`,
 "Ruby and Rails" → "Flutter and Dart" in prose. Ruby code samples that are
@@ -83,7 +83,7 @@ skills and their triggers (section D).
   dev_dependencies, `dart run build_runner build -d`.
 - Verification step: `flutter analyze && flutter test`.
 
-### C. Removed from the Ruby fork (13)
+### C. Removed from the Ruby fork (15)
 
 ruby, rails-guides, rails-upgrade, ruby-upgrade, ruby-commit-message,
 brakeman, sandi-metz-rules, 37signals-style, hwc-forms-validation,
@@ -124,7 +124,7 @@ hooks/
   session-start        text "You have superpowers for Flutter and Dart."
   handoff-create       unchanged
   handoff-restore      unchanged
-skills/                33 directories listed above
+skills/                31 directories listed above
 tests/
   validate-skills.sh   see Testing
 docs/superpowers/specs/  this file
