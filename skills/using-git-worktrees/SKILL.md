@@ -103,8 +103,12 @@ cd "$path"
 Auto-detect and run appropriate setup:
 
 ```bash
-# Ruby on Rails (primary)
-if [ -f pubspec.yaml ]; then bundle install; fi
+# Flutter / Dart (primary)
+if [ -f pubspec.yaml ]; then
+  flutter pub get
+  # Code generation (auto_route, json_serializable, freezed, ...) if configured
+  if grep -q 'build_runner' pubspec.yaml; then dart run build_runner build -d; fi
+fi
 
 # Node.js
 if [ -f package.json ]; then npm install; fi
@@ -125,8 +129,8 @@ if [ -f go.mod ]; then go mod download; fi
 Run tests to ensure worktree starts clean:
 
 ```bash
-# Ruby on Rails (primary)
-flutter test
+# Flutter / Dart (primary)
+flutter analyze && flutter test
 
 # Other project types
 npm test      # Node.js
@@ -157,9 +161,8 @@ Ready to implement <feature-name>
 | Neither exists | Check CLAUDE.md → Ask user |
 | Directory not ignored | Add to .gitignore + commit |
 | Tests fail during baseline | Report failures + ask |
-| No package.json/Cargo.toml | Skip dependency install |
-| Rails + SQLite project | Delegate to `using-sqlite-worktrees` before `db:test:prepare` |
-| `using-sqlite-worktrees` fails | Halt setup, skip tests, report "DB setup incomplete" |
+| No pubspec.yaml/package.json/Cargo.toml | Skip dependency install |
+| build_runner in pubspec.yaml | Run `dart run build_runner build -d` after `flutter pub get` |
 
 ## Common Mistakes
 
@@ -191,7 +194,8 @@ You: I'm using the using-git-worktrees skill to set up an isolated workspace.
 [Check .worktrees/ - exists]
 [Verify ignored - git check-ignore confirms .worktrees/ is ignored]
 [Create worktree: git worktree add .worktrees/auth -b feature/auth]
-[Run bundle install]
+[Run flutter pub get]
+[Run flutter analyze - No issues found!]
 [Run flutter test - 47 passing]
 
 Worktree ready at /Users/jesse/myproject/.worktrees/auth
@@ -224,4 +228,3 @@ Ready to implement auth feature
 
 **Pairs with:**
 - **finishing-a-development-branch** - REQUIRED for cleanup after work complete
-- **using-sqlite-worktrees** - REQUIRED delegation when Rails + SQLite detected, after `bundle install`, before `db:test:prepare`
