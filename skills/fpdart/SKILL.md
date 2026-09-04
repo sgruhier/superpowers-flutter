@@ -62,7 +62,7 @@ class Checkout {
 
   TaskEither<Failure, Receipt> call() => _cart
       .current()
-      .flatMap((cart) => cart.isEmpty ? TaskEither.left(const EmptyCartFailure()) : TaskEither.right(cart))
+      .flatMap((cart) => cart.isEmpty ? TaskEither<Failure, Cart>.left(const EmptyCartFailure()) : TaskEither<Failure, Cart>.right(cart))
       .flatMap(_payment.charge)
       .map(Receipt.fromPayment);
 }
