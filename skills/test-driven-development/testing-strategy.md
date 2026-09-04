@@ -88,7 +88,7 @@ Keep to one `blocTest` per transition so a failure points at exactly one behavio
 
 ## Presentation UI: widget tests
 
-Widget tests exercise a page or widget against a real `MaterialApp` shell but a mocked Bloc, so the test controls exactly which state the widget renders without going through real business logic. Use `mocktail_bloc`'s `MockBloc` (or a plain `mocktail` Mock implementing the bloc's interface) and inject it with `BlocProvider.value`.
+Widget tests exercise a page or widget against a real `MaterialApp` shell but a mocked Bloc, so the test controls exactly which state the widget renders without going through real business logic. Use `bloc_test`'s `MockBloc` (or a plain `mocktail` Mock implementing the bloc's interface) and inject it with `BlocProvider.value`.
 
 ```dart
 class MockLoginBloc extends MockBloc<LoginEvent, LoginState> implements LoginBloc {}
