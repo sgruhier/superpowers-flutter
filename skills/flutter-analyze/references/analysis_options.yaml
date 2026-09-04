@@ -29,6 +29,8 @@ linter:
     - cancel_subscriptions
     - close_sinks
     - directives_ordering
+    - prefer_const_constructors
+    - prefer_const_literals_to_create_immutables
     - prefer_final_locals
     - prefer_final_in_for_each
     - prefer_single_quotes
