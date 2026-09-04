@@ -258,11 +258,11 @@ Expected: `20`.
 - [ ] **Step 2: Rename plugin references**
 
 ```bash
-grep -rl 'superpowers-ruby\|Superpowers Ruby\|Ruby and Rails\|Ruby/Rails' skills | xargs sed -i.bak \
+find skills -type f -name '*.md' -exec sed -i.bak \
   -e 's/superpowers-ruby/superpowers-flutter/g' \
   -e 's/Superpowers Ruby/Superpowers Flutter/g' \
   -e 's/Ruby and Rails/Flutter and Dart/g' \
-  -e 's#Ruby/Rails#Flutter/Dart#g'
+  -e 's#Ruby/Rails#Flutter/Dart#g' {} +
 find . -name '*.bak' -delete
 ```
 
@@ -1208,7 +1208,7 @@ BlocBuilder<ProfileCubit, ProfileState>(
   builder: (context, state) => switch (state) {
     ProfileInitial() || ProfileLoading() => const Center(child: CircularProgressIndicator()),
     ProfileLoaded(:final user) => ProfileBody(user: user),
-    ProfileErr(:final failure) => ErrorView(failure: failure, onRetry: () => context.read<ProfileCubit>().load(userId)),
+    ProfileError(:final failure) => ErrorView(failure: failure, onRetry: () => context.read<ProfileCubit>().load(userId)),
   },
 )
 ```
