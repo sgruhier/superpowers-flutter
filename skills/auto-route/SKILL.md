@@ -80,11 +80,25 @@ class AuthGuard extends AutoRouteGuard {
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) {
     if (_session.state.isAuthenticated) return resolver.next();
-    resolver.redirectUntil(const LoginRoute());
+    router.push(LoginRoute(onResult: resolver.next));
   }
 }
 ```
-`redirectUntil` re-evaluates the guard when the login page pops, so a successful login continues to the originally requested route. Re-run guards after logout with `router.reevaluateGuards()` from a `BlocListener` on `SessionCubit`.
+```dart
+@RoutePage()
+class LoginPage extends StatelessWidget {
+  const LoginPage({super.key, required this.onResult});
+  final void Function(bool success) onResult;
+
+  void _submit(BuildContext context) {
+    // ... perform sign-in ...
+    onResult(true);
+    context.router.pop();
+  }
+  ...
+}
+```
+The guarded route stays pending until something calls `resolver.next()`; `LoginRoute`'s `onResult` is that call, so a successful sign-in resumes navigation to the originally requested route. `redirectUntil` alone does not do this — nothing completes the resolver unless a route result or a listenable does. Re-run guards after logout with `router.reevaluateGuards()` from a `BlocListener` on `SessionCubit`. If several guards must react to the same session change, wire a `reevaluateListenable` into `router.config(...)` instead.
 
 ## Tabs with AutoTabsRouter
 
