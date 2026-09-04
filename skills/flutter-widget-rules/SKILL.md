@@ -88,7 +88,7 @@ class ProfilePage extends StatelessWidget {
 
 - Every `IconButton` has a `tooltip`; every image has `semanticLabel` or `excludeFromSemantics`.
 - Tap targets ≥ 48×48 (`kMinInteractiveDimension`).
-- Text scales: no fixed-height containers around text; test with `textScaleFactor: 2.0` in a widget test.
+- Text scales: no fixed-height containers around text; test with `textScaler: TextScaler.linear(2.0)` in a widget test.
 
 ## Review Checklist
 
