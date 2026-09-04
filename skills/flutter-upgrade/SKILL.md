@@ -23,7 +23,7 @@ If the baseline is red, stop and fix first (`superpowers-flutter:systematic-debu
 ## SDK upgrade
 
 1. Read `references/breaking-changes.md` and open the breaking-changes page for every minor release between current and target.
-2. If the project pins the SDK (`fvm`, `.fvmrc`, `asdf`), change the pin (`fvm use <version>`). Otherwise `flutter upgrade` to the latest stable; for a specific older version, `git -C "$(dirname "$(dirname "$(which flutter)")")" checkout <tag>` then `flutter doctor`.
+2. If the project pins the SDK (`fvm`, `.fvmrc`, `asdf`), change the pin (`fvm use <version>`). Otherwise `flutter upgrade` for the latest stable; for a specific older version, pin it per-project with `fvm use <version>` instead — do not check out a tag inside the global SDK install, which is shared by every project on the machine.
 3. Update `environment.sdk` in `pubspec.yaml` to the new floor.
 4. `flutter pub get`, then `dart fix --apply`, then `flutter analyze`.
 5. Grep for known deprecations listed in the breaking-changes page and migrate by hand.
