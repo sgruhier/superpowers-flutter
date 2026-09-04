@@ -144,32 +144,21 @@ All available skills — invoke with the `Skill` tool using the `name` value.
 | `superpowers-flutter:handoff-resume` | When starting a new session and wanting to continue from a previous handoff |
 | `superpowers-flutter:handoff-list` | When viewing available handoff documents |
 
-### Ruby & Rails
+### Flutter & Dart
 
 | Name | When to Use |
 |------|-------------|
-| `superpowers-flutter:ruby` | When writing, reviewing, or debugging pure Ruby — idiomatic patterns, Ruby 3.x+ features (pattern matching, `Data.define`, endless methods), memoization, result objects |
-| `superpowers-flutter:rails-guides` | When working on any Rails-specific topic: ActiveRecord, routing, controllers, views, mailers, jobs, Action Cable, Action Text, Active Storage, migrations, validations, associations, caching, security |
-| `superpowers-flutter:37signals-style` | When writing Rails code in 37signals/Basecamp style — controllers, models, views, Hotwire, testing, database, philosophy |
-| `superpowers-flutter:ruby-commit-message` | When committing changes in Ruby or Rails projects — Conventional Commits format with developer-friendly body |
-| `superpowers-flutter:sandi-metz-rules` | When reviewing or refactoring Ruby code for quality — classes <100 lines, methods <5 lines, ≤4 params, one object per controller action |
-
-### Hotwire & Stimulus
-
-| Name | When to Use |
-|------|-------------|
-| `superpowers-flutter:hwc-stimulus-fundamentals` | When working on Stimulus controller lifecycle, values, targets, outlets, action parameters, keyboard events — framework-level APIs |
-| `superpowers-flutter:hwc-navigation-content` | When implementing Turbo Drive/Frames navigation: pagination, tabbed nav, lazy loading, faceted filtering, cache lifecycle, scroll restoration |
-| `superpowers-flutter:hwc-forms-validation` | When building Hotwire form workflows: submission lifecycle, inline editing, validation errors, typeahead, modal forms |
-| `superpowers-flutter:hwc-ux-feedback` | When adding cross-cutting UX feedback: loading states, busy indicators, progress bars, optimistic UI, page transitions |
-| `superpowers-flutter:hwc-realtime-streaming` | When implementing push-based Hotwire: Turbo Streams over WebSocket/SSE, custom stream actions, live list updates, cross-tab sync |
-| `superpowers-flutter:hwc-media-content` | When building media-heavy features: image/video/audio uploads, previews, playback controls, progress tracking, third-party media libs |
-
-### Security
-
-| Name | When to Use |
-|------|-------------|
-| `superpowers-flutter:brakeman` | When running Rails security audits, analyzing code for SQL injection/XSS/command injection, or setting up CI/CD security scanning |
+| `superpowers-flutter:dart` | When writing, reviewing, or debugging any Dart code — Effective Dart, Dart 3 features (records, patterns, sealed classes), error handling, async idioms |
+| `superpowers-flutter:flutter-clean-architecture` | When creating or restructuring a feature, adding a repository, use case, data source, or wiring dependency injection (**REQUIRED** for new features) |
+| `superpowers-flutter:bloc` | When adding or changing state management — any Bloc, Cubit, event, or state class |
+| `superpowers-flutter:flutter-widget-rules` | When writing or reviewing any widget — build size, extraction, const, keys, BuildContext safety |
+| `superpowers-flutter:flutter-analyze` | Before committing or requesting review, when analyzer warnings appear, when setting up lints |
+| `superpowers-flutter:go-router` | When working on navigation and `go_router` is in pubspec.yaml |
+| `superpowers-flutter:auto-route` | When working on navigation and `auto_route` is in pubspec.yaml |
+| `superpowers-flutter:fpdart` | When writing domain or data code and `fpdart` is in pubspec.yaml |
+| `superpowers-flutter:flutter-docs` | When any Flutter or Dart framework/API question comes up — topic map to official docs |
+| `superpowers-flutter:flutter-upgrade` | When bumping the Flutter/Dart SDK or a major package version |
+| `superpowers-flutter:dart-commit-message` | When committing changes in a Flutter or Dart project |
 
 ### Code Review & Quality
 
