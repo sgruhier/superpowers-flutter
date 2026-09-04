@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Use when implementing any feature or bugfix in a Flutter or Dart project, before writing implementation code — RED-GREEN-REFACTOR with flutter_test, bloc_test and mocktail
 ---
 
 # Test-Driven Development (TDD)
@@ -73,32 +73,32 @@ digraph tdd_cycle {
 Write one minimal test showing what should happen.
 
 <Good>
-```ruby
-test "retries failed operations 3 times" do
-  attempts = 0
-  operation = -> {
-    attempts += 1
-    raise "fail" if attempts < 3
-    "success"
+```dart
+test('retries failed operations 3 times', () async {
+  var attempts = 0;
+  Future<String> operation() async {
+    attempts++;
+    if (attempts < 3) throw Exception('fail');
+    return 'success';
   }
 
-  result = retry_operation(operation)
+  final result = await retryOperation(operation);
 
-  assert_equal "success", result
-  assert_equal 3, attempts
-end
+  expect(result, 'success');
+  expect(attempts, 3);
+});
 ```
 Clear name, tests real behavior, one thing
 </Good>
 
 <Bad>
-```ruby
-test "retry works" do
-  call_count = 0
-  stub_op = -> { call_count += 1 }
-  retry_operation(stub_op)
-  assert_equal 3, call_count  # tests call count, not behavior
-end
+```dart
+test('retry works', () async {
+  var callCount = 0;
+  Future<void> stubOp() async { callCount++; }
+  await retryOperation(stubOp);
+  expect(callCount, 3); // tests call count, not behavior
+});
 ```
 Vague name, tests invocation not outcome
 </Bad>
@@ -113,13 +113,14 @@ Vague name, tests invocation not outcome
 **MANDATORY. Never skip.**
 
 ```bash
-flutter test test/models/retry_test.rb
+flutter test test/core/utils/retry_test.dart
 ```
 
 Confirm:
 - Test fails (not errors)
 - Failure message is expected
 - Fails because feature missing (not typos)
+- Pure Dart package (no Flutter dependency)? Use `dart test` instead of `flutter test`
 
 **Test passes?** You're testing existing behavior. Fix test.
 
@@ -130,27 +131,34 @@ Confirm:
 Write simplest code to pass the test.
 
 <Good>
-```ruby
-def retry_operation(fn, max_attempts: 3)
-  attempts = 0
-  begin
-    fn.call
-  rescue => e
-    attempts += 1
-    retry if attempts < max_attempts
-    raise
-  end
-end
+```dart
+Future<T> retryOperation<T>(Future<T> Function() fn, {int maxAttempts = 3}) async {
+  var attempts = 0;
+  while (true) {
+    try {
+      return await fn();
+    } catch (_) {
+      attempts++;
+      if (attempts >= maxAttempts) rethrow;
+    }
+  }
+}
 ```
 Just enough to pass
 </Good>
 
 <Bad>
-```ruby
-def retry_operation(fn, max_attempts: 3, backoff: :linear,
-                    on_retry: nil, jitter: false, timeout: nil)
-  # YAGNI
-end
+```dart
+Future<T> retryOperation<T>(
+  Future<T> Function() fn, {
+  int maxAttempts = 3,
+  Backoff backoff = Backoff.linear,
+  void Function(int)? onRetry,
+  bool jitter = false,
+  Duration? timeout,
+}) async {
+  // YAGNI
+}
 ```
 Over-engineered
 </Bad>
@@ -162,7 +170,7 @@ Don't add features, refactor other code, or "improve" beyond the test.
 **MANDATORY.**
 
 ```bash
-flutter test test/models/retry_test.rb
+flutter test test/core/utils/retry_test.dart
 ```
 
 Confirm:
@@ -281,38 +289,43 @@ Tests-first force edge case discovery before implementing. Tests-after verify yo
 
 ## Example: Bug Fix
 
-**Bug:** Empty email accepted
+**Bug:** Empty email accepted by the sign-up form Cubit
 
 **RED**
-```ruby
-test "rejects empty email" do
-  user = User.new(email: "")
-  assert_not user.valid?
-  assert_includes user.errors[:email], "can't be blank"
-end
+```dart
+blocTest<SignUpCubit, SignUpState>(
+  'rejects empty email',
+  build: () => SignUpCubit(signUp: MockSignUp()),
+  act: (cubit) => cubit.emailChanged(''),
+  expect: () => [const SignUpState(email: '', emailError: 'Email is required')],
+);
 ```
 
 **Verify RED**
 ```bash
-$ flutter test test/models/user_test.rb
-FAIL: expected "can't be blank" to be included in []
+$ flutter test test/features/auth/presentation/cubit/sign_up_cubit_test.dart
+Expected: [SignUpState(email: , emailError: Email is required)]
+  Actual: [SignUpState(email: , emailError: null)]
 ```
 
 **GREEN**
-```ruby
-class User < ApplicationRecord
-  validates :email, presence: true
-end
+```dart
+void emailChanged(String value) {
+  emit(state.copyWith(
+    email: value,
+    emailError: value.isEmpty ? 'Email is required' : null,
+  ));
+}
 ```
 
 **Verify GREEN**
 ```bash
-$ flutter test test/models/user_test.rb
-1 runs, 1 assertions, 0 failures, 0 errors
+$ flutter test test/features/auth/presentation/cubit/sign_up_cubit_test.dart
+00:01 +1: All tests passed!
 ```
 
 **REFACTOR**
-Extract validation for multiple fields if needed.
+Move the rule into a `validateEmail` function in `domain/` when a second screen needs it.
 
 ## Verification Checklist
 
@@ -351,7 +364,7 @@ When adding mocks or test utilities, read @testing-anti-patterns.md to avoid com
 - Adding test-only methods to production classes
 - Mocking without understanding dependencies
 
-When adding mocks or writing tests, read @testing-strategy.md for Rails-specific patterns.
+When adding mocks or writing tests, read @testing-strategy.md for Flutter layer-by-layer patterns.
 
 ## Final Rule
 

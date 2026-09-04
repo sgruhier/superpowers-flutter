@@ -21,33 +21,26 @@ Tests must verify real behavior, not mock behavior. Mocks are a means to isolate
 ## Anti-Pattern 1: Testing Mock Behavior
 
 **The violation:**
-```ruby
-# ❌ BAD: Testing that the stub was called, not what happened
-test "sidebar renders" do
-  sidebar = stub(render: "<nav>stub</nav>")
-  page = Page.new(sidebar: sidebar)
-  page.render
-  assert sidebar.received_render  # testing the stub, not the page
-end
+```dart
+// ❌ BAD: asserts the stub was called, not what the user gets
+final api = MockAuthApi();
+when(() => api.signIn(any(), any())).thenAnswer((_) async => user);
+await repo.signIn('a@b.c', 'x');
+verify(() => api.signIn(any(), any())).called(1); // and nothing else
 ```
 
 **Why this is wrong:**
-- You're verifying the stub works, not that the page works
-- Test passes when stub is present, fails when it's not
+- You're verifying the mock works, not that the repository works
+- Test passes when the mock is wired up, fails when it's not
 - Tells you nothing about real behavior
 
 **your human partner's correction:** "Are we testing the behavior of a mock?"
 
 **The fix:**
-```ruby
-# ✅ GOOD: Test real controller response or don't stub it
-test "shows navigation" do
-  get dashboard_url
-  assert_dom "nav", text: /Dashboard/  # test real output
-end
-
-# OR if collaborator must be isolated:
-# Don't assert on the stub — test the subject's observable behavior
+```dart
+// ✅ GOOD: assert the subject's observable result
+final result = await repo.signIn('a@b.c', 'x');
+expect(result, Right(user));
 ```
 
 ### Gate Function
@@ -65,17 +58,11 @@ BEFORE asserting on any mock element:
 ## Anti-Pattern 2: Test-Only Methods in Production
 
 **The violation:**
-```ruby
-# ❌ BAD: reset_state only called in tests
-class Session
-  def reset_state  # Looks like production API!
-    @workspace = nil
-    @events.clear
-  end
-end
-
-# In tests
-teardown { @session.reset_state }
+```dart
+// ❌ BAD: resetForTest exists only for tests
+class SessionCubit extends Cubit<SessionState> {
+  void resetForTest() => emit(const SessionState.initial());
+}
 ```
 
 **Why this is wrong:**
@@ -85,18 +72,10 @@ teardown { @session.reset_state }
 - Confuses object lifecycle with entity lifecycle
 
 **The fix:**
-```ruby
-# ✅ GOOD: Use teardown helpers or fixtures, not production methods
-# Session has no reset_state — each test gets a fresh instance
-
-# In test helper
-def new_session
-  Session.new(workspace: workspaces(:default))
-end
-
-# In tests
-setup { @session = new_session }
-# No teardown needed — fixtures wrap each test in a rolled-back transaction
+```dart
+// ✅ GOOD: build a fresh instance per test in setUp
+setUp(() => cubit = SessionCubit(repo));
+tearDown(() => cubit.close());
 ```
 
 ### Gate Function
@@ -118,15 +97,11 @@ BEFORE adding any method to production class:
 ## Anti-Pattern 3: Mocking Without Understanding
 
 **The violation:**
-```ruby
-# ❌ BAD: Stub prevents side effect the test depends on
-test "detects duplicate server" do
-  # Stubbing add_to_catalog wipes out the config write!
-  ServerRegistry.stub(:add_to_catalog, nil) do
-    add_server(config)
-    add_server(config)  # Should raise — but won't!
-  end
-end
+```dart
+// ❌ BAD: stubbing the repository hides that the use case never calls it
+when(() => repo.save(any())).thenAnswer((_) async {});
+await saveProfile(profile);
+// test passes even if saveProfile has an early return before repo.save
 ```
 
 **Why this is wrong:**
@@ -135,15 +110,10 @@ end
 - Test passes for wrong reason or fails mysteriously
 
 **The fix:**
-```ruby
-# ✅ GOOD: Stub only the slow external boundary, preserve behavior
-test "detects duplicate server" do
-  # Stub the slow HTTP call, not the config write
-  HTTPClient.stub(:connect, true) do
-    add_server(config)        # config written
-    assert_raises(DuplicateServerError) { add_server(config) }
-  end
-end
+```dart
+// ✅ GOOD: verify the interaction the behavior depends on
+await saveProfile(profile);
+verify(() => repo.save(profile)).called(1);
 ```
 
 ### Gate Function
@@ -175,14 +145,14 @@ BEFORE mocking any method:
 ## Anti-Pattern 4: Incomplete Mocks
 
 **The violation:**
-```ruby
-# ❌ BAD: Partial stub hash — missing fields downstream code uses
-stub_response = {
-  status: "success",
-  data: { user_id: "123", name: "Alice" }
-  # Missing: metadata that downstream code accesses
-}
-# Later: breaks with NoMethodError when code calls response[:metadata][:request_id]
+```dart
+// ❌ BAD: partial stub map — missing fields downstream code uses
+final stubResponse = {
+  'status': 'success',
+  'data': {'user_id': '123', 'name': 'Alice'},
+  // Missing: metadata that downstream code accesses
+};
+// Later: throws when code accesses response['metadata']['request_id']
 ```
 
 **Why this is wrong:**
@@ -194,14 +164,14 @@ stub_response = {
 **The Iron Rule:** Mirror the COMPLETE data structure as it exists in reality, not just fields your immediate test uses.
 
 **The fix:**
-```ruby
-# ✅ GOOD: Mirror real API response completely
-stub_response = {
-  status: "success",
-  data: { user_id: "123", name: "Alice" },
-  metadata: { request_id: "req-789", timestamp: Time.now.to_i }
-  # All keys the real API returns
-}
+```dart
+// ✅ GOOD: mirror the real API response completely
+final stubResponse = {
+  'status': 'success',
+  'data': {'user_id': '123', 'name': 'Alice'},
+  'metadata': {'request_id': 'req-789', 'timestamp': DateTime.now().millisecondsSinceEpoch},
+  // All keys the real API returns
+};
 ```
 
 ### Gate Function
