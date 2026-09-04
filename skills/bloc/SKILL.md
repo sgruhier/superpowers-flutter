@@ -23,18 +23,24 @@ Start with a Cubit. Promote to a Bloc only when a transformer is needed.
 Sealed class per screen, one subclass per UI situation. Widgets switch exhaustively.
 
 ```dart
-sealed class ProfileState {
+sealed class ProfileState extends Equatable {
   const ProfileState();
+  @override
+  List<Object?> get props => const [];
 }
 final class ProfileInitial extends ProfileState { const ProfileInitial(); }
 final class ProfileLoading extends ProfileState { const ProfileLoading(); }
 final class ProfileLoaded extends ProfileState {
   const ProfileLoaded(this.user);
   final User user;
+  @override
+  List<Object?> get props => [user];
 }
 final class ProfileError extends ProfileState {
   const ProfileError(this.failure);
   final Failure failure;
+  @override
+  List<Object?> get props => [failure];
 }
 ```
 
@@ -96,21 +102,49 @@ class ProfileCubit extends Cubit<ProfileState> {
 ## Writing a Bloc
 
 ```dart
+sealed class SearchState extends Equatable {
+  const SearchState();
+  @override
+  List<Object?> get props => const [];
+}
+final class SearchInitial extends SearchState { const SearchInitial(); }
+final class SearchLoading extends SearchState { const SearchLoading(); }
+final class SearchLoaded extends SearchState {
+  const SearchLoaded(this.products);
+  final List<Product> products;
+  @override
+  List<Object?> get props => [products];
+}
+final class SearchError extends SearchState {
+  const SearchError(this.failure);
+  final Failure failure;
+  @override
+  List<Object?> get props => [failure];
+}
+
+sealed class SearchEvent {
+  const SearchEvent();
+}
+final class SearchQueryChanged extends SearchEvent {
+  const SearchQueryChanged(this.query);
+  final String query;
+}
+
 class SearchBloc extends Bloc<SearchEvent, SearchState> {
   SearchBloc({required SearchProducts search})
       : _search = search,
-        super(const SearchState.initial()) {
+        super(const SearchInitial()) {
     on<SearchQueryChanged>(_onQueryChanged, transformer: debounce(const Duration(milliseconds: 300)));
   }
   final SearchProducts _search;
 
   Future<void> _onQueryChanged(SearchQueryChanged event, Emitter<SearchState> emit) async {
-    if (event.query.isEmpty) return emit(const SearchState.initial());
-    emit(const SearchState.loading());
+    if (event.query.isEmpty) return emit(const SearchInitial());
+    emit(const SearchLoading());
     final result = await _search(event.query);
     emit(switch (result) {
-      Ok(:final value) => SearchState.loaded(value),
-      Err(:final failure) => SearchState.error(failure),
+      Ok(:final value) => SearchLoaded(value),
+      Err(:final failure) => SearchError(failure),
     });
   }
 }

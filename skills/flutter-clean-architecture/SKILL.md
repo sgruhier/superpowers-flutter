@@ -149,15 +149,19 @@ class AuthRepositoryImpl implements AuthRepository {
 
 `lib/core/error/failure.dart`:
 ```dart
-sealed class Failure {
+sealed class Failure extends Equatable {
   const Failure([this.message]);
   final String? message;
+  @override
+  List<Object?> get props => [message];
 }
-class ServerFailure extends Failure { const ServerFailure([super.message]); }
-class NetworkFailure extends Failure { const NetworkFailure(); }
-class CacheFailure extends Failure { const CacheFailure(); }
-class InvalidCredentialsFailure extends Failure { const InvalidCredentialsFailure(); }
+final class ServerFailure extends Failure { const ServerFailure([super.message]); }
+final class NetworkFailure extends Failure { const NetworkFailure(); }
+final class CacheFailure extends Failure { const CacheFailure(); }
+final class InvalidCredentialsFailure extends Failure { const InvalidCredentialsFailure(); }
 ```
+
+`Equatable` compares `runtimeType` as well as `props`, so distinct failure types with the same message are never equal — this is what lets tests assert on failures directly.
 
 `lib/core/error/result.dart`:
 ```dart
