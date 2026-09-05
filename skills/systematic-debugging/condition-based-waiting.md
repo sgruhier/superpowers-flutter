@@ -49,7 +49,7 @@ expect(result, isNotNull);
 
 | Scenario | Pattern |
 |----------|---------|
-| Wait for event | `await waitFor(() => firstEventOfType(events, 'DONE'))` |
+| Wait for event | `await waitForEvent(source, 'DONE')` |
 | Wait for state | `await waitFor(() => bloc.state.isReady ? true : null)` |
 | Wait for count | `await waitFor(() => items.length >= 5 ? true : null)` |
 | Wait for file | `await waitFor(() => File(path).existsSync() ? true : null)` |

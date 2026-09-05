@@ -150,10 +150,10 @@ digraph principle {
 
 ## Stack Trace Tips
 
-**In tests:** Use `console.error()` not logger - logger may be suppressed
+**In tests:** Use `stderr.writeln` not `debugPrint` - output may be buffered or dropped by the test runner
 **Before operation:** Log before the dangerous operation, not after it fails
 **Include context:** Directory, cwd, environment variables, timestamps
-**Capture stack:** `new Error().stack` shows complete call chain
+**Capture stack:** `StackTrace.current` shows complete call chain
 
 ## Real-World Impact
 

@@ -99,24 +99,22 @@ class SignIn {
 When a use case would only forward a single call — no validation, no composition, called from exactly one Bloc — skip it. Let the Bloc or Cubit depend on the domain repository *interface* directly instead:
 
 ```dart
-class LoginCubit extends Cubit<LoginState> {
-  LoginCubit({required AuthRepository authRepository})
-      : _authRepository = authRepository,
-        super(const LoginInitial());
+class OnboardingCubit extends Cubit<OnboardingState> {
+  OnboardingCubit(this._authRepository) : super(const OnboardingInitial());
   final AuthRepository _authRepository;
 
   Future<void> submit(String email, String password) async {
-    emit(const LoginLoading());
+    emit(const OnboardingLoading());
     final result = await _authRepository.signIn(email: email, password: password);
     emit(switch (result) {
-      Ok(:final value) => LoginSuccess(value),
-      Err(:final failure) => LoginFailure(failure),
+      Ok(:final value) => OnboardingSuccess(value),
+      Err(:final failure) => OnboardingFailure(failure),
     });
   }
 }
 ```
 
-This does not weaken the layer rule: `AuthRepository` is an *interface* declared in `domain/repositories/`, so `LoginCubit` above still depends only on `domain/`. What stays forbidden is a Bloc importing `data/`, a concrete `*RepositoryImpl`, a data source, `BuildContext`, or Flutter.
+This does not weaken the layer rule: `AuthRepository` is an *interface* declared in `domain/repositories/`, so `OnboardingCubit` above still depends only on `domain/`. What stays forbidden is a Bloc importing `data/`, a concrete `*RepositoryImpl`, a data source, `BuildContext`, or Flutter.
 
 ## Data
 
