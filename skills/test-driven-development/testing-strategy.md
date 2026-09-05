@@ -10,7 +10,7 @@ Each layer of the clean-architecture, feature-first structure gets a different k
 |---|---|---|---|---|
 | domain | `lib/features/<f>/domain/` | pure unit | `flutter_test` (or `test`) | repository interfaces only |
 | data | `lib/features/<f>/data/` | unit | `flutter_test` + `mocktail` | data sources (HTTP client, DB, storage) |
-| presentation / logic | `lib/features/<f>/presentation/{bloc,cubit}/` | `blocTest` | `bloc_test` + `mocktail` | use cases |
+| presentation / logic | `lib/features/<f>/presentation/{bloc,cubit}/` | `blocTest` | `bloc_test` + `mocktail` | use cases, or the repository interface when the Bloc depends on one directly |
 | presentation / UI | `lib/features/<f>/presentation/{pages,widgets}/` | widget test | `flutter_test` + `mocktail` | Bloc/Cubit |
 | core | `lib/core/` | unit | `flutter_test` | as needed |
 
@@ -52,7 +52,7 @@ class MockAuthApi extends Mock implements AuthApi {}
 test('maps 401 to InvalidCredentialsFailure', () async {
   when(() => api.signIn(any(), any())).thenThrow(const ApiException(401));
   final result = await repo.signIn(email: 'a@b.c', password: 'bad');
-  expect(result, isA<Err<User>>()); // or isA<Left<Failure, User>>() with fpdart
+  expect(result, isA<Err<User>>()); // or, with fpdart, `await repo.signIn(...).run()` then isA<Left<Failure, User>>()
 });
 ```
 
@@ -60,7 +60,7 @@ Whenever a custom type is passed to `any()`, register a fallback value for it in
 
 ## Presentation logic: blocTest
 
-Blocs and Cubits are tested with `bloc_test`'s `blocTest`, which drives the bloc through an action and asserts on the exact sequence of states it emits. Mock the use case(s) the bloc depends on; never mock the bloc under test.
+Blocs and Cubits are tested with `bloc_test`'s `blocTest`, which drives the bloc through an action and asserts on the exact sequence of states it emits. Mock the use case(s) the bloc depends on, or the repository interface when the bloc depends on one directly instead of a use case; never mock the bloc under test.
 
 ```dart
 class MockSignIn extends Mock implements SignIn {}

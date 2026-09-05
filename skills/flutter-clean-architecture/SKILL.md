@@ -45,7 +45,7 @@ test/                            # mirrors lib/
 
 1. `domain/` imports only Dart SDK, `package:equatable` (optional), `package:fpdart` (if present). Never `package:flutter`.
 2. `data/` imports `domain/` and infrastructure packages (http, dio, sqflite, shared_preferences). Never `presentation/`.
-3. `presentation/` imports `domain/` (entities, use cases) and Flutter. Never `data/`. Widgets never call a repository or use case directly: they go through a Bloc/Cubit (see `superpowers-flutter:bloc`).
+3. `presentation/` imports `domain/` (entities, use cases, repository interfaces) and Flutter. Never `data/`. Widgets never call a repository or use case directly: they go through a Bloc/Cubit (see `superpowers-flutter:bloc`).
 4. Cross-feature access goes through `domain/` interfaces registered in get_it, never through another feature's `data/` or `presentation/`.
 
 Check with: `grep -rn "package:flutter" lib/features/*/domain` must print nothing.
@@ -78,11 +78,11 @@ abstract interface class AuthRepository {
 }
 ```
 
-With fpdart: `Future<Either<Failure, User>>` instead of `Future<Result<User>>` (see `superpowers-flutter:fpdart`).
+With fpdart: `TaskEither<Failure, User>` instead of `Future<Result<User>>` (see `superpowers-flutter:fpdart`).
 
 ### Use case
 
-One class, one `call`. Takes primitives or a small params record.
+A use case earns its place when it does something: composes more than one repository, enforces a domain rule, transforms or aggregates data, or is called from more than one place. One class, one `call`, taking primitives or a small params record:
 
 ```dart
 class SignIn {
@@ -90,11 +90,33 @@ class SignIn {
   final AuthRepository _repository;
 
   Future<Result<User>> call({required String email, required String password}) =>
-      _repository.signIn(email: email, password: password);
+      _repository.signIn(email: email.trim().toLowerCase(), password: password);
 }
 ```
 
-A use case that only forwards is still worth having: Blocs depend on use cases, so the repository interface can change without touching presentation.
+`SignIn` earns its place here by normalizing the email before delegating — not by only forwarding.
+
+When a use case would only forward a single call — no validation, no composition, called from exactly one Bloc — skip it. Let the Bloc or Cubit depend on the domain repository *interface* directly instead:
+
+```dart
+class LoginCubit extends Cubit<LoginState> {
+  LoginCubit({required AuthRepository authRepository})
+      : _authRepository = authRepository,
+        super(const LoginInitial());
+  final AuthRepository _authRepository;
+
+  Future<void> submit(String email, String password) async {
+    emit(const LoginLoading());
+    final result = await _authRepository.signIn(email: email, password: password);
+    emit(switch (result) {
+      Ok(:final value) => LoginSuccess(value),
+      Err(:final failure) => LoginFailure(failure),
+    });
+  }
+}
+```
+
+This does not weaken the layer rule: `AuthRepository` is an *interface* declared in `domain/repositories/`, so `LoginCubit` above still depends only on `domain/`. What stays forbidden is a Bloc importing `data/`, a concrete `*RepositoryImpl`, a data source, `BuildContext`, or Flutter.
 
 ## Data
 
@@ -222,7 +244,7 @@ Before writing code for a feature, read `pubspec.yaml`:
 | `go_router` | Use `superpowers-flutter:go-router` for pages and navigation |
 | `auto_route` | Use `superpowers-flutter:auto-route` |
 | neither | Propose adding `go_router`; do not write raw `Navigator.push` chains |
-| `fpdart` | Return `Either<Failure, T>` / `TaskEither` from repositories and use cases (`superpowers-flutter:fpdart`); do not create `result.dart` |
+| `fpdart` | Return `TaskEither<Failure, T>` from repositories and use cases (`superpowers-flutter:fpdart`); do not create `result.dart` |
 | no `fpdart` | Use `Result<T>` from `lib/core/error/result.dart` |
 | `freezed` | Allowed for states/models; not required |
 | `injectable` | Follow it if already used; otherwise register by hand as above |
@@ -242,7 +264,7 @@ Before writing code for a feature, read `pubspec.yaml`:
 | Mistake | Fix |
 |---|---|
 | `fromJson` in an entity | Move to a model in `data/models` |
-| Bloc calls repository directly | Inject a use case |
+| Bloc imports `data/`, a concrete `*RepositoryImpl`, or a data source | Depend on the domain repository interface (or a use case) instead |
 | Widget calls `getIt<SignIn>()` | Provide a Bloc; widget dispatches an event |
 | `try/catch` in a Bloc mapping exceptions | Catch in repository impl, return `Failure` |
 | One giant `AppBloc` | One Bloc per screen or bounded concern |

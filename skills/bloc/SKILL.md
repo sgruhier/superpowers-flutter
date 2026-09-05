@@ -7,7 +7,7 @@ description: Use when adding or changing state management in a Flutter app — c
 
 ## Overview
 
-`flutter_bloc` is the only state-management library in this stack. Widgets render state and dispatch intents; Blocs hold logic and call use cases; use cases call repositories.
+`flutter_bloc` is the only state-management library in this stack. Widgets render state and dispatch intents; Blocs hold logic and call use cases, or a domain repository interface directly when there's no use case to call; use cases call repositories.
 
 ## Cubit or Bloc?
 
@@ -156,7 +156,7 @@ EventTransformer<T> debounce<T>(Duration d) => (events, mapper) => events.deboun
 
 ## Rules
 
-1. A Bloc depends on use cases, never on repositories, data sources, `BuildContext`, or Flutter.
+1. A Bloc depends on use cases, or directly on a domain repository *interface* when no use case earns its place (see `superpowers-flutter:flutter-clean-architecture`). Never on a concrete repository implementation, a data source, `BuildContext`, or Flutter.
 2. No `try/catch` for domain failures in a Bloc: use cases return `Result`/`Either`. Catch only truly unexpected errors with `onError` in a `BlocObserver`.
 3. One Bloc per screen or per bounded concern (auth session, cart). Never one Bloc per widget.
 4. No `emit` after an `await` without checking `isClosed` when the Bloc may be closed mid-flight.

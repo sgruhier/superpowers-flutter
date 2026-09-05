@@ -1,6 +1,6 @@
 ---
 name: fpdart
-description: Use when writing domain or data code in a Flutter app whose pubspec.yaml depends on fpdart — Either and TaskEither for failures, Option at boundaries, mapping exceptions once in the data layer, consuming in Blocs with fold or patterns
+description: Use when writing domain or data code in a Flutter app whose pubspec.yaml depends on fpdart — TaskEither for failures, Option for absence everywhere in domain, mapping exceptions once in the data layer, consuming in Blocs with match/map/run
 ---
 
 # fpdart
@@ -14,30 +14,15 @@ When `fpdart` is present, `Either<Failure, T>` replaces the hand-written `Result
 | Layer | Return type |
 |---|---|
 | data source | plain `Future<T>`, throws typed exceptions |
-| repository (domain interface + data impl) | `Future<Either<Failure, T>>` or `TaskEither<Failure, T>` |
+| repository (domain interface + data impl) | `TaskEither<Failure, T>` |
 | use case | same as repository |
-| Bloc | consumes with `fold` or pattern matching, emits states |
+| Bloc | consumes with `match` or pattern matching, emits states |
 | widgets | never see `Either` |
 
-Pick `TaskEither` when use cases chain several async steps; `Future<Either>` when one call is enough. Do not mix within one feature.
+Every repository and use case returns `TaskEither<Failure, T>` — never `Future<Either<Failure, T>>`. There is no per-feature choice here. For an operation with nothing to return, that return type is `TaskEither<Failure, Unit>`, not `void`: `Unit` (fpdart's own type, one value, `unit`) keeps the result composable with `.map`/`.flatMap` the same way any other `TaskEither` is.
 
 ## Repository implementation: map exceptions once
 
-```dart
-@override
-Future<Either<Failure, User>> signIn({required String email, required String password}) async {
-  try {
-    final model = await _remote.signIn(email, password);
-    return right(model.toEntity());
-  } on ApiException catch (e) {
-    return left(e.statusCode == 401 ? const InvalidCredentialsFailure() : ServerFailure(e.message));
-  } on SocketException {
-    return left(const NetworkFailure());
-  }
-}
-```
-
-With `TaskEither`:
 ```dart
 @override
 TaskEither<Failure, User> signIn({required String email, required String password}) =>
@@ -68,67 +53,98 @@ class Checkout {
 }
 ```
 
-Run it in the Bloc with `.run()`.
+Consume it in the Bloc with `.match(...).map(emit).run()` — see below.
 
 ## Consuming in a Bloc
 
 ```dart
 Future<void> load(String id) async {
   emit(const ProfileLoading());
-  final result = await _getProfile(id); // Either<Failure, User>
-  emit(result.fold(ProfileError.new, ProfileLoaded.new));
+  await _getProfile(id)
+      .match(ProfileError.new, ProfileLoaded.new)
+      .map(emit)
+      .run();
 }
 ```
 
-Or with patterns (fpdart `Either` is sealed as `Left`/`Right`):
+With failure-specific messages (here `ProfileError` holds a `String` message rather than the raw `Failure`, which is why the branches build strings, not `Failure` values):
+
 ```dart
-emit(switch (await _getProfile(id)) {
-  Right(:final value) => ProfileLoaded(value),
-  Left(:final value) => ProfileError(value),
-});
+Future<void> load(String id) async {
+  emit(const ProfileLoading());
+  await _getProfile(id)
+      .match(
+        (failure) => switch (failure) {
+          NetworkFailure() => const ProfileError('No connection'),
+          _ => ProfileError(failure.message ?? 'Something went wrong'),
+        },
+        ProfileLoaded.new,
+      )
+      .map(emit)
+      .run();
+}
 ```
+
+`match` on a `TaskEither<L, R>` returns a `Task<A>` (verified against fpdart 1.2.0: `Task<A> match<A>(A Function(L l) onLeft, A Function(R r) onRight)`), so `.map(emit)` yields `Task<void>` and `.run()` executes it — nothing happens until `.run()`. The branches of `match` build states, they do not emit; `.map(emit)` performs the single emission. Emitting inside the branches is how you end up emitting twice, and forgetting `.run()` is how you end up emitting nothing at all — see Common Mistakes.
 
 ## Option
 
-Use `Option<T>` only at a boundary where "absent" is a domain concept the caller must handle (cached token, last-known location). Everywhere else nullable types are clearer. Never return `Option` from widgets or Blocs.
+Nullable is banned from domain signatures: entity fields, repository interface returns and parameters, use case signatures. Where a domain value may be absent, the type is `Option<T>`, not `T?`.
+
+Nullable stays where the platform hands it to you: Flutter widget parameters (`Key?`, a form validator's return), a raw JSON map before it becomes a model, and third-party APIs. Convert at the boundary — `Option.fromNullable` inbound, `toNullable()` outbound.
 
 ```dart
+class UserProfile extends Equatable {
+  const UserProfile({required this.id, required this.avatarUrl});
+  final String id;
+  final Option<String> avatarUrl;
+  @override
+  List<Object?> get props => [id, avatarUrl];
+}
+
 Option<Token> cachedToken() => Option.fromNullable(_storage.read('token')).map(Token.new);
 ```
 
+`Option` never reaches widgets or Blocs: presentation receives a resolved value or a state, not an `Option`. Resolve it before emitting — pattern match, `map`/`match` into a concrete value — never `getOrElse(() => throw ...)`.
+
 ## Rules
 
-1. `Failure` on the left, always. Never `Either<Exception, T>` or `Either<String, T>`.
+1. `Failure` on the left, always. Never `Either<Exception, T>`, `Either<String, T>`, or a `Future<Either<...>>` in place of `TaskEither`.
 2. Exceptions become failures in the repository implementation and nowhere else.
 3. No `getOrElse(() => throw ...)`, no `.getRight().toNullable()!`. Fold or match.
 4. No fpdart imports in `presentation/widgets` or `presentation/pages`.
-5. No `Task`, `Reader`, `State` monads unless the team already uses them; `Either`, `TaskEither`, `Option` cover this architecture.
+5. No `Task`, `Reader`, `State` monads unless the team already uses them; `Either`, `TaskEither`, `Option` cover this architecture (the `Task` that `.match()` hands back when consuming a `TaskEither` in a Bloc doesn't count — that's the standard chain, not a deliberate reach for the monad).
 6. Do not wrap simple synchronous getters that cannot fail.
+7. No `T?` in domain signatures — entity fields, repository interfaces, use case signatures. Use `Option<T>`.
 
 ## Testing
+
+A repository or use case now returns a `TaskEither`, not a `Future`, so a test runs it first:
 
 ```dart
 test('returns InvalidCredentialsFailure on 401', () async {
   when(() => api.signIn(any(), any())).thenThrow(const ApiException(401));
-  final result = await repo.signIn(email: 'a@b.c', password: 'bad');
+  final result = await repo.signIn(email: 'a@b.c', password: 'bad').run();
   expect(result, const Left<Failure, User>(InvalidCredentialsFailure()));
 });
 
 test('returns user on success', () async {
   when(() => api.signIn(any(), any())).thenAnswer((_) async => const UserModel(id: '1', email: 'a@b.c'));
-  final result = await repo.signIn(email: 'a@b.c', password: 'x');
+  final result = await repo.signIn(email: 'a@b.c', password: 'x').run();
   expect(result, const Right<Failure, User>(User(id: '1', email: 'a@b.c')));
 });
 ```
 
-`Left`/`Right` have value equality when `Failure` and the entity do (Equatable or manual `==`). For `TaskEither`, `await te.run()` then assert the same way.
+`Left`/`Right` have value equality when `Failure` and the entity do (Equatable or manual `==`), so `expect` compares them directly once `.run()` has resolved the `Future<Either<Failure, T>>`.
 
 ## Common Mistakes
 
 | Mistake | Fix |
 |---|---|
-| `try/catch` around a use case in a Bloc | use case already returns `Either` |
+| `try/catch` around a use case in a Bloc | use case already returns `TaskEither` |
 | Both `result.dart` and fpdart | delete `result.dart` |
 | `Either<String, T>` | sealed `Failure` |
-| `Option` for a nullable field on an entity | `T?` |
+| `Future<Either<Failure, T>>` on a repository or use case | `TaskEither<Failure, T>` |
+| `T?` on a domain entity field, repository signature, or use case signature | `Option<T>` |
 | `.run()` called in a widget | call in the Bloc |
+| Emitting inside a `match` branch, or forgetting `.run()` | branches build the state, `.map(emit)` emits once, `.run()` executes the chain |
