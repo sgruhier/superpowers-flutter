@@ -107,7 +107,7 @@ Auto-detect and run appropriate setup:
 if [ -f pubspec.yaml ]; then
   flutter pub get
   # Code generation (auto_route, json_serializable, freezed, ...) if configured
-  if grep -q 'build_runner' pubspec.yaml; then dart run build_runner build -d; fi
+  if grep -q 'build_runner' pubspec.yaml; then dart run build_runner build; fi
 fi
 
 # Node.js
@@ -162,7 +162,7 @@ Ready to implement <feature-name>
 | Directory not ignored | Add to .gitignore + commit |
 | Tests fail during baseline | Report failures + ask |
 | No pubspec.yaml/package.json/Cargo.toml | Skip dependency install |
-| build_runner in pubspec.yaml | Run `dart run build_runner build -d` after `flutter pub get` |
+| build_runner in pubspec.yaml | Run `dart run build_runner build` after `flutter pub get` |
 
 ## Common Mistakes
 

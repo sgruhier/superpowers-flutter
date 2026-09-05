@@ -21,23 +21,24 @@ Be direct. If the brief is missing something critical, say what and why.
 
 ## Project Briefing
 
-- **Language/Framework:** Ruby <X.Y.Z>, Rails <X.Y.Z> (or: Sinatra/Hanami/Roda/none)
-- **Database:** <postgres/mysql/sqlite> via <adapter gem>
-- **Test framework:** <flutter_test/RSpec>, run with `<command>`
-- **Background jobs:** <Sidekiq/Solid Queue/GoodJob/none>, queue adapter = `<value>`
-- **Asset pipeline:** <Propshaft/Sprockets> + <importmap/jsbundling/none>
-- **JS framework:** <Hotwire (Turbo X.Y, Stimulus X.Y)/React/none>
-- **Type tooling:** <Sorbet/RBS+Steep/none>
-- **Linter:** <RuboCop/StandardRB/none>
-- **Deploy target:** <Heroku/Fly/Kamal/AWS/unknown>
-- **Ruby version manager:** <rbenv/asdf/mise/chruby>
+- **Language/Framework:** Dart <X.Y.Z>, Flutter <X.Y.Z> (channel <stable/beta>)
+- **State management:** flutter_bloc (Bloc/Cubit) <version>
+- **Architecture:** feature-first clean architecture (`lib/features/<feature>/{data,domain,presentation}` + `lib/core`)
+- **Routing:** <go_router/auto_route/none>, version `<X.Y.Z>`
+- **Functional core:** <fpdart/none>
+- **DI:** get_it, registered by hand in `lib/core/di/injection.dart`
+- **Test framework:** flutter_test + bloc_test + mocktail, run with `<command>`
+- **Codegen:** <build_runner + freezed/json_serializable/go_router_builder/auto_route_generator/none>
+- **Linter:** flutter_lints / custom `analysis_options.yaml`
+- **Target platforms:** <iOS/Android/web/desktop>, min SDK `<value>`
+- **Flutter version manager:** <FVM/asdf/none>
 
 ## Where Things Live
 
-- Custom autoload paths beyond Rails defaults: `app/services/`, `app/queries/`, `lib/<...>` (or: standard layout)
+- Feature directory for this bug: `lib/features/<feature>/{data,domain,presentation}`
 - Relevant entrypoints for this bug: `<file>`, `<file>`
-- Relevant initializers: `config/initializers/<file>.rb` (or: none)
-- Engines / mounted apps that touch this code path: <list or "none">
+- Relevant DI registration: `lib/core/di/injection.dart` or `lib/features/<feature>/<feature>_injection.dart` (or: none)
+- Packages/plugins that touch this code path: <list or "none">
 
 ## The Question
 
@@ -75,52 +76,52 @@ Be direct. If the brief is missing something critical, say what and why.
 
 ## Constraints
 
-- <e.g. "Public API of `User#audit!` must not change — it's called from a sealed gem">
-- <e.g. "Must work on Ruby 3.3 and 3.4">
-- <e.g. "No new gems">
-- <e.g. "P95 of this request path must stay under 200ms">
-- <e.g. "Cannot modify `db/schema.rb` outside a migration">
+- <e.g. "Public API of `AuthRepository.signIn` must not change — it's called from three features">
+- <e.g. "Must work on Dart 3.x with sound null safety">
+- <e.g. "No new packages">
+- <e.g. "Cold start must stay under 2s on the target device">
+- <e.g. "Cannot hand-edit generated `*.g.dart`/`*.gr.dart` files">
 
 ## Flutter/Dart-Specific Context
 
 (Include only items that might be relevant — don't pad.)
 
-- **Autoloading:** Zeitwerk, eager_load = <true/false> in this environment. Failing constant is in `<app/lib/...>`.
-- **Frozen string literals:** `# frozen_string_literal: true` <present/absent> in failing file.
-- **Thread safety:** Puma `<workers>` workers × `<threads>` threads. AR pool size = `<n>`. Failing code path <does/does not> use `Thread.current`.
-- **Initializer order:** `<initializer>` runs before this code and does `<thing>`.
-- **Recent pubspec.lock changes:** `<gem>` bumped from `<old>` to `<new>` in commit `<sha>`.
-- **Monkey patches:** `<file>` reopens `<class>` to add `<method>`.
-- **Environment:** Bug occurs in `<dev/test/prod>`. The relevant config differs: `<flag>` is `<value>` here vs `<value>` elsewhere.
-- **Job vs sync:** Failing code runs on `<sync request / Sidekiq job / Solid Queue job>`.
-- **Schema drift:** `db/schema.rb` <is/is not> in sync with `db/migrate/`.
+- **Generated code:** `<file>.g.dart`/`.gr.dart`/`.freezed.dart` <is/is not> in sync with its source; `build_runner` last run on `<date/commit>`.
+- **Null safety:** Failing path <does/does not> use `late` or `!` on `<field>`.
+- **Async:** Failing code <awaits/does not await> `<call>`; Bloc/Cubit <does/does not> check `isClosed` before `emit` after the `await`.
+- **State management:** `<Bloc/Cubit>` owns this state; `copyWith` on `<State>` <does/does not> include `<field>`.
+- **Recent pubspec.lock changes:** `<package>` bumped from `<old>` to `<new>` in commit `<sha>`.
+- **Platform channel:** `<plugin>` version `<X.Y.Z>`; behavior <does/does not> diverge between iOS and Android.
+- **DI:** `<Type>` <is/is not> registered in `lib/core/di/injection.dart` (or feature injection file); registered as <singleton/factory>.
+- **Build mode:** Bug occurs in `<debug/profile/release>`. Relevant `kReleaseMode`/`kDebugMode` branch: `<code>`.
+- **Routing:** Failing route `<path>` <is/is not> present in the generated router table; guard/redirect involved: `<name>`.
 
 ## Attached Files
 
 Files included below: `<list of paths>` (total: <N> lines)
 
-### `<path/to/failing_file.rb>`
-```ruby
+### `<path/to/failing_file.dart>`
+```dart
 <full contents or relevant excerpt with line numbers>
 ```
 
-### `<path/to/collaborator.rb>`
-```ruby
+### `<path/to/collaborator.dart>`
+```dart
 <...>
 ```
 
-### `<path/to/test.rb>`
-```ruby
+### `<path/to/test_test.dart>`
+```dart
 <...>
 ```
 
-### `db/schema.rb` (relevant excerpt)
-```ruby
-<only the tables involved>
+### `<path/to/model.dart>` (entity/model involved)
+```dart
+<...>
 ```
 
-### `config/initializers/<relevant>.rb`
-```ruby
+### `lib/core/di/injection.dart` (relevant excerpt)
+```dart
 <...>
 ```
 
@@ -130,7 +131,7 @@ The following were redacted from this brief and the attached files:
 
 - `<count>` instances of API keys / tokens / passwords (replaced with `[REDACTED:credential]`)
 - `<count>` connection strings with embedded credentials (replaced with `[REDACTED:db-url]`)
-- Excluded entirely: `.env`, `config/master.key`, `config/credentials.yml.enc`
+- Excluded entirely: `.env`, `android/key.properties`, `android/app/google-services.json`, `ios/Runner/GoogleService-Info.plist`, signing keys (`*.jks`, `*.keystore`, `*.p12`)
 
 If the answer depends on the redacted values, please flag what you'd need to know in non-secret form (e.g. "is the API key the staging or production format?") rather than asking for the value itself.
 

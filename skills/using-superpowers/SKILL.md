@@ -135,6 +135,7 @@ All available skills — invoke with the `Skill` tool using the `name` value.
 | `superpowers-flutter:finishing-a-development-branch` | When wrapping up a feature branch for PR |
 | `superpowers-flutter:using-git-worktrees` | When needing isolated git worktrees for parallel work |
 | `superpowers-flutter:compound` | When a non-trivial problem has just been solved — capture the solution |
+| `superpowers-flutter:consulting-an-oracle` | When stuck after multiple debug attempts and escalating to a stronger one-shot model |
 
 ### Session Continuity
 

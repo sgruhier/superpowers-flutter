@@ -30,9 +30,11 @@ for dir in "$ROOT"/skills/*/; do
 done
 echo "checked $count skills"
 
-# 3. No Ruby leftovers
+# 3. No Ruby leftovers (skills/systematic-debugging and skills/brainstorming use
+# illustrative Ruby deliberately and are allowlisted)
 if [ -d "$ROOT/skills" ]; then
-  leftovers="$(grep -rnE 'superpowers-ruby|bin/rails|Minitest|Gemfile' "$ROOT/skills" "$ROOT/hooks" "$ROOT/agents" 2>/dev/null || true)"
+  leftovers="$(grep -rnE 'superpowers-ruby|bin/rails|Minitest|Gemfile|Rails\.|config/initializers|db/schema\.rb|\bRSpec\b|```ruby' "$ROOT/skills" "$ROOT/hooks" "$ROOT/agents" 2>/dev/null \
+    | grep -vE "^$ROOT/skills/(systematic-debugging|brainstorming)/" || true)"
   [ -z "$leftovers" ] || err "Ruby leftovers:
 $leftovers"
 fi

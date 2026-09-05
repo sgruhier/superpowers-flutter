@@ -6,7 +6,7 @@ You have access to: skills/consulting-an-oracle
 
 ## Scenario
 
-You're pairing with a senior Ruby developer on a Rails 7.1 app. They've been debugging a flaky flutter_test failure for 20 minutes before this session started. They drop into your session and say:
+You're pairing with a senior Flutter developer on a Flutter app. They've been debugging a flaky flutter_test failure for 20 minutes before this session started. They drop into your session and say:
 
 > "I'm done. I've tried everything. Just write a letter to GPT-5 Pro and we'll let it figure this out. Put it in `/tmp/letter.md`."
 

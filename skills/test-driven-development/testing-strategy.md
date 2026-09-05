@@ -33,10 +33,11 @@ void main() {
   });
 
   test('returns user on success', () async {
-    when(() => repo.signIn(any(), any())).thenAnswer((_) async => const User(id: '1'));
+    when(() => repo.signIn(email: any(named: 'email'), password: any(named: 'password')))
+        .thenAnswer((_) async => const Ok(User(id: '1', email: 'a@b.c')));
     final result = await signIn(email: 'a@b.c', password: 'x');
-    expect(result, const User(id: '1'));
-    verify(() => repo.signIn('a@b.c', 'x')).called(1);
+    expect(result, const Ok(User(id: '1', email: 'a@b.c')));
+    verify(() => repo.signIn(email: 'a@b.c', password: 'x')).called(1);
   });
 }
 ```
@@ -50,8 +51,8 @@ class MockAuthApi extends Mock implements AuthApi {}
 
 test('maps 401 to InvalidCredentialsFailure', () async {
   when(() => api.signIn(any(), any())).thenThrow(const ApiException(401));
-  final result = await repo.signIn('a@b.c', 'bad');
-  expect(result, isA<Failure>()); // or Left<Failure, User> with fpdart
+  final result = await repo.signIn(email: 'a@b.c', password: 'bad');
+  expect(result, isA<Err<User>>()); // or isA<Left<Failure, User>>() with fpdart
 });
 ```
 
@@ -62,26 +63,33 @@ Whenever a custom type is passed to `any()`, register a fallback value for it in
 Blocs and Cubits are tested with `bloc_test`'s `blocTest`, which drives the bloc through an action and asserts on the exact sequence of states it emits. Mock the use case(s) the bloc depends on; never mock the bloc under test.
 
 ```dart
-blocTest<CounterCubit, int>(
-  'emits [1] when increment is called',
-  build: () => CounterCubit(),
-  act: (cubit) => cubit.increment(),
-  expect: () => [1],
-);
+class MockSignIn extends Mock implements SignIn {}
 
-blocTest<LoginBloc, LoginState>(
-  'emits [loading, success] on valid submit',
-  build: () => LoginBloc(signIn: signIn),
-  seed: () => const LoginState(email: 'a@b.c', password: 'x'),
-  setUp: () => when(() => signIn(email: any(named: 'email'), password: any(named: 'password')))
-      .thenAnswer((_) async => const User(id: '1')),
-  act: (bloc) => bloc.add(const LoginSubmitted()),
-  expect: () => [
-    const LoginState(email: 'a@b.c', password: 'x', status: LoginStatus.loading),
-    const LoginState(email: 'a@b.c', password: 'x', status: LoginStatus.success),
-  ],
-  verify: (_) => verify(() => signIn(email: 'a@b.c', password: 'x')).called(1),
-);
+void main() {
+  late MockSignIn signIn;
+  setUp(() => signIn = MockSignIn());
+
+  blocTest<CounterCubit, int>(
+    'emits [1] when increment is called',
+    build: () => CounterCubit(),
+    act: (cubit) => cubit.increment(),
+    expect: () => [1],
+  );
+
+  blocTest<LoginBloc, LoginState>(
+    'emits [loading, success] on valid submit',
+    build: () => LoginBloc(signIn: signIn),
+    seed: () => const LoginState(email: 'a@b.c', password: 'x'),
+    setUp: () => when(() => signIn(email: any(named: 'email'), password: any(named: 'password')))
+        .thenAnswer((_) async => const Ok(User(id: '1', email: 'a@b.c'))),
+    act: (bloc) => bloc.add(const LoginSubmitted()),
+    expect: () => [
+      const LoginState(email: 'a@b.c', password: 'x', status: LoginStatus.loading),
+      const LoginState(email: 'a@b.c', password: 'x', status: LoginStatus.success),
+    ],
+    verify: (_) => verify(() => signIn(email: 'a@b.c', password: 'x')).called(1),
+  );
+}
 ```
 
 Keep to one `blocTest` per transition so a failure points at exactly one behavior. The `expect` list must include every state the bloc emits for that action, in order — omitting an intermediate state is a false pass, not a simplification. Use the `errors` parameter to assert on thrown errors rather than swallowing them. And never assert on the bloc's initial state inside `expect`: `blocTest` only records states emitted after `act` runs, so the seeded or default initial state never appears in that list.

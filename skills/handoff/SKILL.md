@@ -59,7 +59,7 @@ Derive a short topic slug from the current work context. Use the branch name as 
 **Topic slug guidelines:**
 - Describe the **work being done**, not the branch or ticket — `auth-jwt-migration` not `fix-auth` or `JIRA-1234`
 - Use **2-4 words** in lowercase kebab-case, max 40 characters — enough to distinguish at a glance when scanning `docs/handoffs/`
-- Focus on the **subject and action** — what thing is being changed and how: `stimulus-form-validation`, `stripe-webhook-retry-logic`
+- Focus on the **subject and action** — what thing is being changed and how: `login-bloc-validation`, `stripe-webhook-retry-logic`
 - Avoid generic slugs like `bugfix`, `refactor`, `updates` — these are meaningless when you have 10 handoffs in the directory
 - When in doubt, match the style of existing handoffs in `docs/handoffs/` — consistency beats cleverness
 

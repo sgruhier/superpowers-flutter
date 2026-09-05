@@ -6,7 +6,7 @@ These questions check whether you understand the *why* behind the skill, not jus
 
 ## Q1: Skill scope
 
-A user says: "I just solved a tricky Zeitwerk autoload bug. Capture this so we don't trip on it again next time." Is `consulting-an-oracle` the right skill? If not, which one is, and what's the distinguishing principle?
+A user says: "I just solved a tricky go_router redirect-loop bug. Capture this so we don't trip on it again next time." Is `consulting-an-oracle` the right skill? If not, which one is, and what's the distinguishing principle?
 
 ## Q2: Section ordering
 
@@ -16,9 +16,9 @@ The template puts "Your Role and Desired Output" at the top, *before* the projec
 
 The skill insists on the verbatim stack trace, not a summary. Give one concrete example of information a senior Flutter/Dart oracle could extract from a verbatim trace that a one-sentence summary would lose.
 
-## Q4: The Ruby suspect list
+## Q4: The Flutter/Dart suspect list
 
-Why is the Flutter/Dart-specific suspect list (Zeitwerk mode, frozen string literals, initializer order, gem version drift, etc.) part of *this* skill rather than a separate skill or a generic checklist? What's special about a one-shot oracle prompt that makes those items load-bearing here?
+Why is the Flutter/Dart-specific suspect list (generated code drift, async/Future gotchas, DI wiring, build mode, etc.) part of *this* skill rather than a separate skill or a generic checklist? What's special about a one-shot oracle prompt that makes those items load-bearing here?
 
 ## Q5: One-hop file selection
 

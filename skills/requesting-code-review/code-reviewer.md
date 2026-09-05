@@ -34,8 +34,8 @@ git diff {BASE_SHA}..{HEAD_SHA}
 - Proper error handling?
 - DRY principle followed?
 - Edge cases handled?
-- Sandi Metz rules respected? (≤100-line classes, ≤5-line methods, ≤4 params, ≤1 instance var passed to views)
-- Thin controllers, fat models (DHH philosophy)?
+- Small, focused classes and methods? (short widget/class bodies, ≤4 positional params, prefer named params)
+- Thin widgets — logic lives in Blocs/Cubits and use cases, not `build`?
 - No phantom skill references or missing dependencies?
 
 **Architecture:**
@@ -49,10 +49,8 @@ git diff {BASE_SHA}..{HEAD_SHA}
 - Edge cases covered?
 - Integration tests where needed?
 - All tests passing?
-- Using flutter_test (not RSpec)?
-- Using fixtures (not factories)?
-- Using `build` instead of `create` when persistence not needed?
-- No system tests (`ApplicationSystemTestCase`)?
+- Using flutter_test/bloc_test/mocktail (this project's stack)?
+- Widget tests keyed by `Key`, not brittle text/type lookups where avoidable?
 - `flutter test` passes?
 
 **Requirements:**
@@ -118,26 +116,26 @@ git diff {BASE_SHA}..{HEAD_SHA}
 
 ```
 ### Strengths
-- Clean database schema with proper migrations (db/schema.rb:15-42)
+- Clean sealed-class Result handling with no silent failures (lib/features/auth/domain/usecases/sign_in.dart:15-42)
 - Comprehensive test coverage (18 tests, all edge cases)
-- Good error handling with fallbacks (app/models/user.rb:85-92)
+- Good error handling with fallbacks (lib/features/auth/data/repositories/auth_repository_impl.dart:85-92)
 
 ### Issues
 
 #### Important
 1. **Missing help text in CLI wrapper**
-   - File: index-conversations:1-31
+   - File: bin/index_conversations.dart:1-31
    - Issue: No --help flag, users won't discover --concurrency
    - Fix: Add --help case with usage examples
 
 2. **Date validation missing**
-   - File: app/models/search.rb:25-27
+   - File: lib/features/search/domain/usecases/search.dart:25-27
    - Issue: Invalid dates silently return no results
    - Fix: Validate format, raise with example
 
 #### Minor
 1. **Progress indicators**
-   - File: app/controllers/imports_controller.rb:130
+   - File: lib/features/import/presentation/bloc/import_bloc.dart:130
    - Issue: No "X of Y" counter for long operations
    - Impact: Users don't know how long to wait
 

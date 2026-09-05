@@ -11,7 +11,7 @@ Code-generated, strongly typed routing. One `AppRouter` in `lib/core/router/`, e
 
 ## Setup
 
-`pubspec.yaml`: `auto_route` in dependencies; `auto_route_generator` and `build_runner` in dev_dependencies. Generate with `dart run build_runner build -d`; commit the generated `app_router.gr.dart`.
+`pubspec.yaml`: `auto_route` in dependencies; `auto_route_generator` and `build_runner` in dev_dependencies. Generate with `dart run build_runner build`; commit the generated `app_router.gr.dart`.
 
 ```
 lib/core/router/

@@ -38,7 +38,7 @@ scripts/fetch-changelogs.sh go_router flutter_bloc   # read what changed
 flutter pub upgrade                      # within constraints
 flutter pub upgrade --major-versions     # cross majors, rewrites pubspec
 flutter pub get
-dart run build_runner build -d           # if codegen is used
+dart run build_runner build  # if codegen is used
 dart fix --apply && flutter analyze && flutter test
 ```
 

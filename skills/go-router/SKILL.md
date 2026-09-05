@@ -83,15 +83,29 @@ class GoRouterRefreshStream extends ChangeNotifier {
 }
 ```
 
-Wire in `app.dart`:
+Wire in `app.dart`, with `SessionCubit` provided above the widget that reads it and the router built once:
 ```dart
 class App extends StatelessWidget {
   const App({super.key});
   @override
   Widget build(BuildContext context) {
-    final router = createRouter(context.read<SessionCubit>());
-    return MaterialApp.router(routerConfig: router);
+    return BlocProvider(
+      create: (_) => getIt<SessionCubit>(),
+      child: const _AppView(),
+    );
   }
+}
+
+class _AppView extends StatefulWidget {
+  const _AppView();
+  @override
+  State<_AppView> createState() => _AppViewState();
+}
+
+class _AppViewState extends State<_AppView> {
+  late final _router = createRouter(context.read<SessionCubit>());
+  @override
+  Widget build(BuildContext context) => MaterialApp.router(routerConfig: _router);
 }
 ```
 Create the router once (a `StatefulWidget` holding it, or a `late final` in a top-level provider); recreating it on every build resets navigation.

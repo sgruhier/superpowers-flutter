@@ -30,10 +30,10 @@ When in-session debugging has stalled, package the failed investigation into a s
 
 ## Output
 
-**Location:** `tmp/oracle/<YYYY-MM-DD>-<slug>.md` (Rails projects gitignore `tmp/` already).
-**Fallback:** `/tmp/oracle-<slug>.md` if `tmp/` isn't writable or this isn't a Rails project.
+**Location:** `tmp/oracle/<YYYY-MM-DD>-<slug>.md` (most Flutter projects don't gitignore `tmp/` by default — add it if the user doesn't want the prompt committed).
+**Fallback:** `/tmp/oracle-<slug>.md` if `tmp/` isn't writable.
 
-**Slug:** short kebab-case description of the failing symptom — `zeitwerk-constant-loop`, `n-plus-one-after-cache-add`, `turbo-stream-double-render`. Not the branch name, not the ticket ID.
+**Slug:** short kebab-case description of the failing symptom — `bloc-emit-after-close`, `go-router-redirect-loop`, `freezed-copywith-stale-field`. Not the branch name, not the ticket ID.
 
 After writing, print:
 
@@ -51,20 +51,18 @@ Suggested invocation:
 Run these in parallel and capture output:
 
 ```bash
-cat .ruby-version 2>/dev/null || cat .tool-versions 2>/dev/null
-ruby --version
-bundle --version 2>/dev/null
-grep -E "^\s*(rails|sinatra|hanami|roda|rspec|minitest|sidekiq|good_job|solid_queue|sorbet|rbs|standard|rubocop)" pubspec.yaml 2>/dev/null
-test -f pubspec.lock && grep -E "^\s+(rails|rack|puma|pg|mysql2|sqlite3|redis) \(" pubspec.lock | head
-test -f config/application.rb && grep -E "config\.(autoload|eager_load|cache_classes|active_job|active_record)" config/application.rb
-ls config/initializers/ 2>/dev/null
-test -f pubspec.yaml && echo "flutter app"
-test -d app/javascript && ls app/javascript 2>/dev/null
-test -f config/importmap.rb && echo "importmap"
-test -f Procfile.dev && cat Procfile.dev
+flutter --version
+dart --version
+cat pubspec.yaml
+test -f pubspec.lock && grep -E "^\s+(go_router|auto_route|fpdart|flutter_bloc|bloc_test|get_it|freezed|injectable|build_runner|json_serializable) " pubspec.lock
+git status --porcelain -- '*.g.dart' '*.gr.dart' '*.freezed.dart'
+flutter doctor -v
+test -f ios/Podfile.lock && grep -c "^  - " ios/Podfile.lock
+test -f android/app/build.gradle.kts && grep -E "compileSdk|minSdk|targetSdk" android/app/build.gradle.kts
+cat .fvmrc 2>/dev/null || cat .fvm/fvm_config.json 2>/dev/null
 ```
 
-Extract: Ruby version, Rails (or other framework) version, DB adapter, test framework, background jobs, asset pipeline, type tooling, linter, Hotwire stack.
+Extract: Flutter and Dart SDK versions, minimum/target platform SDK versions and toolchain state (Xcode, Android SDK, CocoaPods) from `flutter doctor -v`, key package versions from `pubspec.lock`, whether generated code (`*.g.dart`/`*.gr.dart`/`*.freezed.dart`) has pending regeneration, and which of go_router/auto_route/fpdart the project uses.
 
 ### Step 2: Pull the Failure
 
@@ -89,11 +87,11 @@ Include partial successes — "this fixed *one* of the failing tests but the oth
 
 Start from the failing file and walk **one hop**:
 - The failing file itself
-- Classes/modules it references (look at `require`, constant references, method calls on collaborators)
+- Classes it references (look at imports, constructor dependencies, use case/repository collaborators)
 - The matching test file
-- Any initializer in `config/initializers/` that touches this area
-- `db/schema.rb` excerpt (only the relevant tables) if ActiveRecord-related
-- Relevant routes excerpt if request-handling
+- Any DI registration in `lib/core/di/` or the feature's `*_injection.dart` that wires this area
+- The domain entity/model and its `fromJson`/`toJson` (or generated `*.g.dart`) if this is a data-mapping or serialization bug
+- Relevant route definitions in `lib/core/router/` if this is a navigation bug
 
 **Hard cap:** ≤8 files, ≤2000 total lines. If you'd exceed it, prefer fewer files with surrounding context over many files with no context.
 
@@ -103,7 +101,7 @@ Start from the failing file and walk **one hop**:
 
 Scan the prompt body and every attached file for:
 
-- Files: `.env*`, `master.key`, `credentials.yml.enc`, `*.pem`, `*.key` → **never include, even if asked**
+- Files: `.env*`, `android/key.properties`, `**/google-services.json`, `**/GoogleService-Info.plist`, `*.jks`, `*.keystore`, `*.pem`, `*.p12` → **never include, even if asked**
 - Patterns: `(?i)(api[_-]?key|secret|token|password|bearer|authorization)\s*[:=]\s*['"][^'"]+['"]`
 - Patterns: connection strings with embedded credentials (`postgres://user:pass@...`)
 - Patterns: long base64 / hex strings near words like "key", "token", "secret"
@@ -120,18 +118,18 @@ Print the file path, line count, and suggested invocation. Do not call any model
 
 ## Flutter/Dart-Specific Suspect List
 
-Always include this section in the oracle prompt — these are the implicit-context items that bite Ruby projects and that an oracle cannot infer:
+Always include this section in the oracle prompt — these are the implicit-context items that bite Flutter projects and that an oracle cannot infer:
 
-- **Autoloading:** Zeitwerk vs Classic? Is the failing constant in `app/`, `lib/`, or an engine? Is `lib/` in autoload paths? Eager-load mode in this environment?
-- **Frozen string literals:** Magic comment present in the failing file?
-- **Thread safety:** Puma worker/thread count, ActiveRecord connection pool size, any `Thread.current` usage in the call stack
-- **Initializer order:** If config-related, what loads before this code? Custom initializers that monkey-patch?
-- **Gem version drift:** `git log -p pubspec.lock` for recently bumped gems on the failing path
-- **Monkey patches:** Anything in `config/initializers/`, `lib/core_ext/`, or `app/lib/` that reopens the failing class?
-- **ActiveSupport gotchas:** `present?`/`blank?`/`try` collisions, `delegate` chains, `with_options` blocks
-- **Rails environment:** Is the bug environment-specific (dev vs test vs prod)? `config/environments/*.rb` differences on the relevant flag?
-- **Background jobs:** Is the failing code on a sync path or a job path? Adapter (Sidekiq/Solid Queue/GoodJob)?
-- **Schema vs model:** Recent migrations not yet reflected in `db/schema.rb`?
+- **Generated code drift:** Are `*.g.dart`/`*.gr.dart`/`*.freezed.dart` committed and in sync with their source? Does `dart run build_runner build` produce a diff?
+- **Null safety:** Any `late` field the failing path reads before it's assigned? A `!` bang operator hiding a null?
+- **Async/Future gotchas:** Is a `Future` started in a constructor or `initState` without being awaited? Does the Bloc/Cubit check `isClosed` before `emit` after an `await`?
+- **State-management path:** Which Bloc/Cubit owns this state? Does its `copyWith` silently fall back to the old value because a field is missing from the parameter list?
+- **Platform channel:** Does the failing code call into a plugin with platform-specific behavior (iOS/Android divergence, missing permission entry, plugin version mismatch)?
+- **Package version drift:** `git log -p pubspec.lock` for recently bumped packages on the failing path
+- **DI wiring:** Is the failing type registered in `lib/core/di/injection.dart` or a feature's `*_injection.dart`? Singleton vs factory mismatch?
+- **Build mode:** Debug-only assertion firing, or a bug that only appears in profile/release (tree-shaking, `kReleaseMode`/`kDebugMode` branches)?
+- **Router/navigation:** If go_router/auto_route related — redirect loop, guard not resolving, route missing from the generated router table
+- **Widget lifecycle:** `BuildContext` used across an `await` without a `mounted` check, a controller/subscription still listened to after `dispose()`
 
 Include only the items that *might* be relevant. Don't pad.
 

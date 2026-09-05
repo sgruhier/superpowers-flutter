@@ -269,7 +269,7 @@ Action:
 
 When a learning's referenced files are gone, that is strong evidence — but only that the **implementation** is gone. Before archiving, reason about whether the **problem the learning solves** is still a concern in the codebase:
 
-- A learning about session token storage where `auth_token.rb` is gone — does the application still handle session tokens? If so, the concept persists under a new implementation. That is Replace, not Archive.
+- A learning about session token storage where `auth_token.dart` is gone — does the application still handle session tokens? If so, the concept persists under a new implementation. That is Replace, not Archive.
 - A learning about a deprecated API endpoint where the entire feature was removed — the problem domain is gone. That is Archive.
 
 Do not search mechanically for keywords from the old learning. Instead, understand what problem the learning addresses, then investigate whether that problem domain still exists in the codebase. The agent understands concepts — use that understanding to look for where the problem lives now, not where the old code used to be.
@@ -391,8 +391,8 @@ Apply in-place edits only when the solution is still substantively correct.
 
 Examples of valid in-place updates:
 
-- Rename `app/models/auth_token.rb` reference to `app/models/session_token.rb`
-- Update `module: AuthToken` to `module: SessionToken`
+- Rename `lib/core/auth/auth_token.dart` reference to `lib/core/auth/session_token.dart`
+- Update `class: AuthToken` to `class: SessionToken`
 - Fix outdated links to related docs
 - Refresh implementation notes after a directory move
 

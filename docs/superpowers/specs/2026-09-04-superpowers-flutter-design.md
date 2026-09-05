@@ -134,7 +134,7 @@ CHANGELOG.md           0.1.0 entry
 .gitattributes         copied (LF for scripts)
 ```
 
-Handoff docs continue to be written under `docs/superpowers/handoffs/`
+Handoff docs continue to be written under `docs/handoffs/`
 as in the Ruby fork.
 
 ## Testing
