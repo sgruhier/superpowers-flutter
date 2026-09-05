@@ -1,31 +1,76 @@
 # superpowers-flutter
 
-A Flutter/Dart-focused fork of [obra/superpowers](https://github.com/obra/superpowers), modeled on [lucianghinda/superpowers-ruby](https://github.com/lucianghinda/superpowers-ruby): the composable workflow skills (brainstorm → plan → TDD → review → finish) plus an opinionated Flutter layer.
+A Flutter/Dart-focused fork of [obra/superpowers](https://github.com/obra/superpowers) — a complete software development workflow for coding agents, built on composable "skills" — modeled on [lucianghinda/superpowers-ruby](https://github.com/lucianghinda/superpowers-ruby). It ships the same brainstorm → plan → TDD → review → finish workflow, plus an opinionated Flutter/Dart layer on top.
 
-## Opinions
+## Flutter/Dart Focus
 
-- **Bloc / Cubit** by default; **Riverpod** supported, selected by reading `pubspec.yaml`
-- **Clean architecture, feature-first**: `lib/features/<feature>/{data,domain,presentation}` + `lib/core`
-- **get_it** registered by hand (Bloc); providers as the DI container, no get_it (Riverpod)
-- **Effective Dart**, Dart 3 (records, patterns, sealed classes), no mandatory codegen
-- **flutter_test + bloc_test + mocktail** (Bloc); **flutter_test + flutter_riverpod (`ProviderContainer`) + mocktail** (Riverpod)
-- **go_router or auto_route**, detected from `pubspec.yaml`
-- **fpdart** optional, detected from `pubspec.yaml`
+This fork extends the core superpowers workflow with a Flutter/Dart skills library:
 
-## Install (Claude Code)
+- **Dart language** idioms — Effective Dart style, Dart 3 features (records, patterns, sealed classes, class modifiers), error handling, null safety, async
+- **Feature-first clean architecture** — `lib/features/<feature>/{data,domain,presentation}` + `lib/core`, dependencies pointing inward
+- **Bloc/Cubit** by default; **Riverpod** supported, selected by reading `pubspec.yaml` — sealed states/events, `BlocProvider`/`BlocBuilder`/`BlocListener` or `Notifier`/`AsyncNotifier` with providers as the DI container
+- **Widget rules** — numbered heuristics for build size, extracting to widget classes, `const`, keys, and `BuildContext` safety
+- **flutter analyze** zero-warning baseline with a vendored strict `analysis_options.yaml`
+- **go_router or auto_route**, detected from `pubspec.yaml` — typed routes, guards driven by a Bloc, route tests
+- **fpdart**, optional and detected from `pubspec.yaml` — `TaskEither<Failure, T>` from every repository and use case, `Option<T>` everywhere a domain value may be absent (no `T?` in domain signatures)
+- **Official Flutter/Dart docs** indexed for quick reference, plus a vendored Flutter layered-architecture guide
+- **Flutter/Dart SDK and package upgrade workflow** — one axis at a time, changelogs read before migrating, verified against a green baseline
+- **Commit messages** following Conventional Commits with feature-directory scopes, for Flutter/Dart projects
+
+## How it works
+
+It starts from the moment you fire up your coding agent. As soon as it sees that you're building something, it *doesn't* just jump into writing code. Instead, it steps back and asks what you're really trying to do, one question at a time.
+
+Once it's teased a spec out of the conversation, it shows the design to you in chunks short enough to actually read and digest, and waits for you to approve it before doing anything else.
+
+After you've signed off on the design, your agent puts together an implementation plan clear enough for an engineer with no context on the codebase to follow — every task has exact file paths, the code to write, and how to verify it. It's built around true red/green TDD with `flutter_test`, `bloc_test`, and `mocktail` (or `ProviderContainer` under Riverpod), YAGNI, and DRY.
+
+Next, once you say "go", it launches subagent-driven development: a fresh subagent per task, each reviewed against the plan and against code quality before the agent moves to the next one. It's not uncommon for the agent to work through a whole plan unattended, without deviating from what you approved.
+
+Because the skills trigger automatically, you don't need to do anything special — your coding agent just has Superpowers for Flutter and Dart.
+
+## Installation
+
+`superpowers-flutter` ships as a native plugin for **Claude Code**.
+
+### Option 1: Install from GitHub
 
 ```
 /plugin marketplace add sgruhier/superpowers-flutter
 /plugin install superpowers-flutter@superpowers-flutter
 ```
 
-From a local clone:
+### Option 2: Install from a local clone
+
 ```
+git clone https://github.com/sgruhier/superpowers-flutter.git
 /plugin marketplace add /path/to/superpowers-flutter
 /plugin install superpowers-flutter@superpowers-flutter
 ```
 
-## Skills
+### Verify installation
+
+Start a new session. It should open by telling you it has "superpowers for Flutter and Dart" and naming the `using-superpowers` skill — that message comes from this plugin's session-start hook, so seeing it means the install worked. Running `/plugin` should list `superpowers-flutter` among your installed plugins.
+
+## The Basic Workflow
+
+1. **brainstorming** — Activates before writing any code. Refines a rough idea through one question at a time, explores alternatives, and presents the design in sections for approval before any implementation is allowed.
+
+2. **using-git-worktrees** — Activates when feature work needs isolation. Creates an isolated worktree on a new branch with smart directory selection and a safety check before work starts.
+
+3. **writing-plans** — Activates once a design is approved. Breaks the work into bite-sized tasks, each with exact file paths, the code to write, and how to verify it — written for an engineer with no context on this codebase.
+
+4. **subagent-driven-development** (or **executing-plans** without subagent support) — Activates once a plan exists. Dispatches a fresh subagent per task with two-stage review — spec compliance, then code quality — before moving to the next task.
+
+5. **test-driven-development** — Activates during implementation. Enforces RED-GREEN-REFACTOR with `flutter_test`, `bloc_test`, and `mocktail` (or `ProviderContainer` under Riverpod): write a failing test, watch it fail, write the minimal code to pass, then refactor.
+
+6. **requesting-code-review** — Activates between tasks. Dispatches the `code-reviewer` subagent against the plan and coding standards, with precisely crafted context rather than the session's full history.
+
+7. **finishing-a-development-branch** — Activates once all tasks are done and tests pass. Verifies the test suite, then presents options to merge, open a PR, keep, or discard the branch, and cleans up the worktree.
+
+**The agent checks for a relevant skill before any task.** This is a mandatory workflow, not a suggestion.
+
+## What's Inside
 
 ### Flutter & Dart
 
@@ -44,7 +89,7 @@ From a local clone:
 | `flutter-upgrade` | Bumping the Flutter/Dart SDK or a package across a major version |
 | `dart-commit-message` | Committing changes in a Flutter or Dart project |
 
-### Process (from superpowers)
+### Process
 
 | Skill | When to reach for it |
 |---|---|
@@ -69,18 +114,31 @@ From a local clone:
 | `consulting-an-oracle` | Stuck after multiple debug attempts — escalate to a stronger one-shot model |
 | `writing-skills` | Creating or editing a skill, or verifying one works before deployment |
 
-## How it works
+## Philosophy
 
-The agent checks for a relevant skill before any task: brainstorming refines the idea, a worktree isolates the work, a plan splits it into small tasks, each task is implemented test-first, reviewed against the plan, and the branch is finished cleanly. The Flutter skills tell the agent how code must be shaped inside that workflow.
+- **Test-Driven Development** - Write tests first, always
+- **Systematic over ad-hoc** - Process over guessing
+- **Complexity reduction** - Simplicity as primary goal
+- **Evidence over claims** - Verify before declaring success
 
-## Development
+## Contributing
 
+Skills live directly in this repository.
+
+1. Fork the repository
+2. Create a branch for your skill
+3. Follow the `writing-skills` skill for creating and testing new skills
+4. Run `bash tests/validate-skills.sh` before opening a PR
+5. Submit a PR
+
+## Updating
+
+```bash
+/plugin update superpowers-flutter
 ```
-bash tests/validate-skills.sh
-```
 
-Vendored docs are refreshed with `skills/dart/scripts/refresh-effective-dart.sh` and `skills/flutter-docs/scripts/refresh-architecture-docs.sh`.
+## License
 
-## Credits
+MIT License - see [LICENSE](LICENSE) for details.
 
-Jesse Vincent for superpowers, Lucian Ghinda for superpowers-ruby. MIT.
+Built on the work of [Jesse Vincent](https://blog.fsck.com) ([obra/superpowers](https://github.com/obra/superpowers)) and [Lucian Ghinda](https://github.com/lucianghinda) ([superpowers-ruby](https://github.com/lucianghinda/superpowers-ruby)). If this workflow — Jesse's original design — has helped you do stuff that makes money, consider [sponsoring his opensource work](https://github.com/sponsors/obra).
