@@ -38,16 +38,16 @@ Error: git init failed in /Users/jesse/project/packages/core
 
 ### 2. Find Immediate Cause
 **What code directly causes this?**
-```ruby
-Open3.capture3("git", "init", chdir: project_dir)
+```dart
+await Process.run('git', ['init'], workingDirectory: projectDir);
 ```
 
 ### 3. Ask: What Called This?
-```ruby
-WorktreeManager#create_session_worktree(project_dir, session_id)
-  → called by Session#initialize_workspace
-  → called by Session.create
-  → called by test in ProjectTest
+```
+WorktreeManager.createSessionWorktree(projectDir, sessionId)
+  → called by Session.initializeWorkspace()
+  → called by Session.create()
+  → called by test in project_test.dart
 ```
 
 ### 4. Keep Tracing Up
@@ -67,17 +67,17 @@ Project.create('name', context.tempDir); // Accessed before beforeEach!
 
 When you can't trace manually, add instrumentation:
 
-```ruby
-# Before the problematic operation
-def git_init(directory)
-  $stderr.puts "DEBUG git init: dir=#{directory} cwd=#{Dir.pwd} env=#{Rails.env}"
-  $stderr.puts caller.first(10).join("\n")
+```dart
+// Before the problematic operation
+Future<void> gitInit(String directory) async {
+  stderr.writeln('DEBUG git init: dir=$directory cwd=${Directory.current.path}');
+  stderr.writeln(StackTrace.current.toString().split('\n').take(10).join('\n'));
 
-  Open3.capture3("git", "init", chdir: directory)
-end
+  await Process.run('git', ['init'], workingDirectory: directory);
+}
 ```
 
-**Critical:** Use `$stderr.puts` in tests (not `Rails.logger` — may be suppressed)
+**Critical:** Use `stderr.writeln` in tests (not `debugPrint` — output may be buffered or dropped by the test runner)
 
 **Run and capture:**
 ```bash

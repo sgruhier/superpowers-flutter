@@ -33,46 +33,50 @@ digraph when_to_use {
 
 ## Core Pattern
 
-```ruby
-# ❌ BEFORE: Guessing at timing
-sleep 0.05
-result = get_result
-assert result
+```dart
+// ❌ BEFORE: Guessing at timing
+await Future<void>.delayed(const Duration(milliseconds: 50));
+final result = getResult();
+expect(result, isNotNull);
 
-# ✅ AFTER: Waiting for condition
-wait_for { get_result }
-result = get_result
-assert result
+// ✅ AFTER: Waiting for condition
+await waitFor(() => getResult());
+final result = getResult();
+expect(result, isNotNull);
 ```
 
 ## Quick Patterns
 
 | Scenario | Pattern |
 |----------|---------|
-| Wait for event | `wait_for { events.find { _1[:type] == "DONE" } }` |
-| Wait for state | `wait_for { machine.state == :ready }` |
-| Wait for count | `wait_for { items.length >= 5 }` |
-| Wait for file | `wait_for { File.exist?(path) }` |
-| Complex condition | `wait_for { obj.ready? && obj.value > 10 }` |
+| Wait for event | `await waitFor(() => firstEventOfType(events, 'DONE'))` |
+| Wait for state | `await waitFor(() => bloc.state.isReady ? true : null)` |
+| Wait for count | `await waitFor(() => items.length >= 5 ? true : null)` |
+| Wait for file | `await waitFor(() => File(path).existsSync() ? true : null)` |
+| Complex condition | `await waitFor(() => obj.isReady && obj.value > 10 ? true : null)` |
 
 ## Implementation
 
 Generic polling helper:
-```ruby
-def wait_for(description: "condition", timeout: 5)
-  deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + timeout
-  loop do
-    result = yield
-    return result if result
-    if Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
-      raise "Timeout waiting for #{description} after #{timeout}s"
-    end
-    sleep 0.01  # poll every 10ms
-  end
-end
+```dart
+Future<T> waitFor<T>(
+  FutureOr<T?> Function() condition, {
+  String description = 'condition',
+  Duration timeout = const Duration(seconds: 5),
+}) async {
+  final deadline = DateTime.now().add(timeout);
+  while (true) {
+    final result = await condition();
+    if (result != null) return result;
+    if (DateTime.now().isAfter(deadline)) {
+      throw TimeoutException('Timeout waiting for $description after ${timeout.inSeconds}s');
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 10)); // poll every 10ms
+  }
+}
 ```
 
-See `condition-based-waiting-example.rb` in this directory for a complete implementation with domain-specific helpers (`wait_for_event`, `wait_for_event_count`, `wait_for_event_match`) from an actual debugging session.
+See `condition-based-waiting-example.dart` in this directory for a complete implementation with domain-specific helpers (`waitForEvent`, `waitForEventCount`, `waitForEventMatch`) from an actual debugging session.
 
 ## Common Mistakes
 
@@ -87,11 +91,11 @@ See `condition-based-waiting-example.rb` in this directory for a complete implem
 
 ## When Arbitrary Timeout IS Correct
 
-```ruby
-# Tool ticks every 100ms - need 2 ticks to verify partial output
-wait_for_event(manager, :tool_started)  # First: wait for condition
-sleep 0.2                               # Then: wait for timed behavior
-# 0.2s = 2 ticks at 100ms intervals — documented and justified
+```dart
+// Tool ticks every 100ms - need 2 ticks to verify partial output
+await waitForEvent(manager, 'toolStarted'); // First: wait for condition
+await Future<void>.delayed(const Duration(milliseconds: 200)); // Then: wait for timed behavior
+// 200ms = 2 ticks at 100ms intervals — documented and justified
 ```
 
 **Requirements:**

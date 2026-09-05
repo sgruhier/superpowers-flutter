@@ -22,53 +22,59 @@ Different layers catch different cases:
 ### Layer 1: Entry Point Validation
 **Purpose:** Reject obviously invalid input at API boundary
 
-```ruby
-def create_project(name, working_directory)
-  raise ArgumentError, "working_directory cannot be empty" if working_directory.blank?
-  raise ArgumentError, "working_directory does not exist: #{working_directory}" unless Dir.exist?(working_directory)
-  raise ArgumentError, "working_directory is not a directory: #{working_directory}" unless File.directory?(working_directory)
-  # ... proceed
-end
+```dart
+void createProject(String name, String workingDirectory) {
+  if (workingDirectory.trim().isEmpty) {
+    throw ArgumentError('workingDirectory cannot be empty');
+  }
+  if (!Directory(workingDirectory).existsSync()) {
+    throw ArgumentError('workingDirectory does not exist: $workingDirectory');
+  }
+  // ... proceed
+}
 ```
 
 ### Layer 2: Business Logic Validation
 **Purpose:** Ensure data makes sense for this operation
 
-```ruby
-def initialize_workspace(project_dir, session_id)
-  raise ArgumentError, "project_dir required for workspace initialization" if project_dir.blank?
-  # ... proceed
-end
+```dart
+void initializeWorkspace(String projectDir, String sessionId) {
+  if (projectDir.trim().isEmpty) {
+    throw ArgumentError('projectDir required for workspace initialization');
+  }
+  // ... proceed
+}
 ```
 
 ### Layer 3: Environment Guards
 **Purpose:** Prevent dangerous operations in specific contexts
 
-```ruby
-def git_init(directory)
-  # In tests, refuse git init outside temp directories
-  if Rails.env.test?
-    tmp = Rails.root.join("tmp").to_s
-    unless File.expand_path(directory).start_with?(tmp)
-      raise "Refusing git init outside tmp/ during tests: #{directory}"
-    end
-  end
-  # ... proceed
-end
+```dart
+Future<void> gitInit(String directory) async {
+  // In tests, refuse git init outside the system temp directory.
+  // `flutter test` sets FLUTTER_TEST=true for every test run.
+  if (Platform.environment['FLUTTER_TEST'] == 'true') {
+    final tmp = Directory.systemTemp.path;
+    final resolved = Directory(directory).absolute.path;
+    if (!resolved.startsWith(tmp)) {
+      throw StateError('Refusing git init outside system temp during tests: $directory');
+    }
+  }
+  // ... proceed
+}
 ```
 
 ### Layer 4: Debug Instrumentation
 **Purpose:** Capture context for forensics
 
-```ruby
-def git_init(directory)
-  Rails.logger.debug("About to git init", {
-    directory: directory,
-    cwd: Dir.pwd,
-    caller: caller.first(5)
-  })
-  # ... proceed
-end
+```dart
+Future<void> gitInit(String directory) async {
+  debugPrint(
+    'About to git init: directory=$directory cwd=${Directory.current.path} '
+    'caller=${StackTrace.current}',
+  );
+  // ... proceed
+}
 ```
 
 ## Applying the Pattern
