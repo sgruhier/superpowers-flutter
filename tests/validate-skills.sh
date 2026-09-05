@@ -45,5 +45,15 @@ if [ -f "$ROOT/hooks/session-start" ]; then
   printf '%s' "$out" | grep -q 'superpowers for Flutter' || err "session-start does not mention Flutter"
 fi
 
+# 5. using-superpowers catalog matches skills/ directories
+uc="$ROOT/skills/using-superpowers/SKILL.md"
+if [ -f "$uc" ]; then
+  rows="$(grep -oE '^\| `superpowers-flutter:[A-Za-z0-9_-]+`' "$uc" | sed -E 's/^\| `superpowers-flutter:(.*)`$/\1/')"
+  dirs="$(ls -1 "$ROOT/skills" | grep -v '^using-superpowers$')"
+  for n in $(echo "$rows" | sort | uniq -d); do err "using-superpowers catalog: duplicate row for '$n'"; done
+  for n in $(comm -23 <(echo "$dirs" | sort -u) <(echo "$rows" | sort -u)); do err "using-superpowers catalog: missing row for skill '$n'"; done
+  for n in $(comm -13 <(echo "$dirs" | sort -u) <(echo "$rows" | sort -u)); do err "using-superpowers catalog: row '$n' has no skills/ directory"; done
+fi
+
 [ "$fail" -eq 0 ] && echo OK
 exit "$fail"

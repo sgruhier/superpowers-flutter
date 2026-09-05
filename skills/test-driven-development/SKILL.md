@@ -315,10 +315,7 @@ Never fix bugs without a test.
 
 ## Testing Anti-Patterns
 
-When adding mocks or test utilities, read @testing-anti-patterns.md to avoid common pitfalls:
-- Testing mock behavior instead of real behavior
-- Adding test-only methods to production classes
-- Mocking without understanding dependencies
+When adding mocks or test utilities, read @writing-good-tests.md to avoid common pitfalls.
 
 When adding mocks or writing tests, read @testing-strategy.md for Flutter layer-by-layer patterns.
 

@@ -197,6 +197,8 @@ cp "$RUBY_SRC"/agents/code-reviewer.md agents/
 chmod +x hooks/session-start hooks/handoff-create hooks/handoff-restore
 ```
 
+> **2026-09-05 update:** `agents/code-reviewer.md` no longer exists in this repo. Its Flutter checks now live in `skills/requesting-code-review/code-reviewer.md`, and the reviewer is dispatched as a general-purpose subagent using that template. Do not recreate `agents/code-reviewer.md`.
+
 - [ ] **Step 2: Rename in hooks and agent**
 
 ```bash
@@ -206,6 +208,8 @@ grep -n "Flutter" hooks/session-start
 Expected: the `session_context=` line reads `You have superpowers for Flutter and Dart.` and the skill name reads `superpowers-flutter:using-superpowers`.
 
 - [ ] **Step 3: Add Flutter paragraph to the reviewer agent**
+
+> **2026-09-05 update:** `agents/code-reviewer.md` no longer exists. These Flutter checks now live in `skills/requesting-code-review/code-reviewer.md`, used as the template for a general-purpose subagent dispatched at review time. Do not recreate `agents/code-reviewer.md`.
 
 Append to the end of `agents/code-reviewer.md`:
 

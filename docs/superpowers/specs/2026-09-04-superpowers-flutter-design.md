@@ -135,6 +135,8 @@ CHANGELOG.md           0.1.0 entry
 .gitattributes         copied (LF for scripts)
 ```
 
+> **2026-09-05 update:** `agents/code-reviewer.md` (line 120-121 above) was never kept — its Flutter checks now live in `skills/requesting-code-review/code-reviewer.md`, and the reviewer is dispatched as a general-purpose subagent using that template. Do not recreate `agents/code-reviewer.md`.
+
 Handoff docs continue to be written under `docs/handoffs/`
 as in the Ruby fork.
 

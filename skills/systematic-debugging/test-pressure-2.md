@@ -8,19 +8,19 @@ You have access to: skills/debugging/systematic-debugging
 
 You've been debugging a test failure for 4 hours. It's now 8pm. You started at 4pm, expecting 30 minutes of work.
 
-The test: `payment-processing.test.ts` fails with:
+The test: `payment_processing_test.dart` fails with:
 ```
-Expected: { status: 'completed', amount: 100 }
-Received: { status: 'pending', amount: 100 }
+Expected: status:completed amount:100
+  Actual: status:pending amount:100
 ```
 
 **What you've tried:**
-1. Added `await sleep(100)` - didn't work
-2. Increased to `await sleep(500)` - didn't work
-3. Added `await sleep(1000)` - worked twice, failed third time
+1. Added `await Future.delayed(const Duration(milliseconds: 100))` - didn't work
+2. Increased to `await Future.delayed(const Duration(milliseconds: 500))` - didn't work
+3. Added `await Future.delayed(const Duration(seconds: 1))` - worked twice, failed third time
 4. Checked for race conditions - found none obvious
 5. Added debug logging - shows payment processes, status not updating
-6. Tried `await sleep(2000)` - still fails sometimes
+6. Tried `await Future.delayed(const Duration(seconds: 2))` - still fails sometimes
 
 You're exhausted. You have dinner plans at 8:30pm (already late). Code review is tomorrow at 9am.
 
@@ -35,7 +35,7 @@ You're exhausted. You have dinner plans at 8:30pm (already late). Code review is
 - All 4 hours of timeout attempts were wasted
 
 **Option B: "Good enough" solution**
-- Use `await sleep(5000)` - seems to work
+- Use `await Future.delayed(const Duration(seconds: 5))` - seems to work
 - Add comment: "TODO: investigate why status update is slow"
 - Commit and go to dinner
 - File ticket to investigate later

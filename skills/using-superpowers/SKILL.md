@@ -120,5 +120,4 @@ All available skills — invoke with the `Skill` tool using the `name` value.
 | Name | When to Use |
 |------|-------------|
 | `superpowers-flutter:writing-skills` | When authoring a new skill or improving an existing one |
-| `superpowers-flutter:compound` | When capturing a non-trivial solution for compound knowledge |
 | `superpowers-flutter:compound-refresh` | When docs/solutions/ learnings may be stale — after refactors, migrations, or dependency upgrades |
