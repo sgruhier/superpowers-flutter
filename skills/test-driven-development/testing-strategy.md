@@ -10,7 +10,7 @@ Each layer of the clean-architecture, feature-first structure gets a different k
 |---|---|---|---|---|
 | domain | `lib/features/<f>/domain/` | pure unit | `flutter_test` (or `test`) | repository interfaces only |
 | data | `lib/features/<f>/data/` | unit | `flutter_test` + `mocktail` | data sources (HTTP client, DB, storage) |
-| presentation / logic | `lib/features/<f>/presentation/{bloc,cubit}/` | `blocTest` | `bloc_test` + `mocktail` | use cases, or the repository interface when the Bloc depends on one directly |
+| presentation / logic | `lib/features/<f>/presentation/{bloc,cubit}/` | `blocTest` (Bloc) or `ProviderContainer` overrides (Riverpod) | `bloc_test` + `mocktail` (Bloc) or `flutter_riverpod` + `mocktail` (Riverpod) | use cases, or the repository interface when the Bloc/notifier depends on one directly |
 | presentation / UI | `lib/features/<f>/presentation/{pages,widgets}/` | widget test | `flutter_test` + `mocktail` | Bloc/Cubit |
 | core | `lib/core/` | unit | `flutter_test` | as needed |
 
@@ -93,6 +93,36 @@ void main() {
 ```
 
 Keep to one `blocTest` per transition so a failure points at exactly one behavior. The `expect` list must include every state the bloc emits for that action, in order — omitting an intermediate state is a false pass, not a simplification. Use the `errors` parameter to assert on thrown errors rather than swallowing them. And never assert on the bloc's initial state inside `expect`: `blocTest` only records states emitted after `act` runs, so the seeded or default initial state never appears in that list.
+
+## Presentation logic: Riverpod
+
+Under Riverpod there is no `blocTest` — a `ProviderContainer` with `overrides` stands in for `ProviderScope`. Override the provider the notifier actually depends on (a use case provider, or the repository provider directly when no use case earns its place) with a `mocktail` mock, drive the notifier, and assert on the emitted state. Dispose the container with `addTearDown` so it doesn't leak between tests.
+
+```dart
+class MockSignIn extends Mock implements SignIn {}
+
+void main() {
+  late MockSignIn signIn;
+  late ProviderContainer container;
+
+  setUp(() {
+    signIn = MockSignIn();
+    container = ProviderContainer(overrides: [signInProvider.overrideWithValue(signIn)]);
+    addTearDown(container.dispose);
+  });
+
+  test('emits AuthSuccess when sign-in succeeds', () async {
+    when(() => signIn(email: any(named: 'email'), password: any(named: 'password')))
+        .thenAnswer((_) async => const Ok(User(id: '1', email: 'a@b.c')));
+
+    await container.read(authNotifierProvider.notifier).signIn('a@b.c', 'x');
+
+    expect(container.read(authNotifierProvider), const AuthSuccess(User(id: '1', email: 'a@b.c')));
+  });
+}
+```
+
+See `superpowers-flutter:riverpod` for asserting a full sequence of states with `container.listen(..., fireImmediately: true)`, and for testing an `AsyncNotifier` via its provider's `.future`.
 
 ## Presentation UI: widget tests
 

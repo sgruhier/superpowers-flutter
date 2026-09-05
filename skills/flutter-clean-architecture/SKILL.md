@@ -37,7 +37,8 @@ lib/
         bloc/ or cubit/
         pages/<name>_page.dart
         widgets/
-      <feature>_injection.dart   # register<Feature>Feature()
+      <feature>_injection.dart   # register<Feature>Feature() — Bloc/get_it form
+      <feature>_providers.dart   # Provider/NotifierProvider bindings — Riverpod form, see superpowers-flutter:riverpod
 test/                            # mirrors lib/
 ```
 
@@ -46,7 +47,7 @@ test/                            # mirrors lib/
 1. `domain/` imports only Dart SDK, `package:equatable` (optional), `package:fpdart` (if present). Never `package:flutter`.
 2. `data/` imports `domain/` and infrastructure packages (http, dio, sqflite, shared_preferences). Never `presentation/`.
 3. `presentation/` imports `domain/` (entities, use cases, repository interfaces) and Flutter. Never `data/`. Widgets never call a repository or use case directly: they go through a Bloc/Cubit (see `superpowers-flutter:bloc`).
-4. Cross-feature access goes through `domain/` interfaces registered in get_it, never through another feature's `data/` or `presentation/`.
+4. Cross-feature access goes through `domain/` interfaces registered in the DI container (get_it, or providers under Riverpod), never through another feature's `data/` or `presentation/`.
 
 Check with: `grep -rn "package:flutter" lib/features/*/domain` must print nothing.
 
@@ -233,6 +234,8 @@ void registerAuthFeature() {
 
 Rules: singletons for repositories and data sources, factories for use cases and Blocs. Register against the interface type. `main.dart` calls `configureDependencies()` before `runApp`. Widgets obtain Blocs via `BlocProvider(create: (_) => getIt<LoginBloc>())`, never `getIt` inside `build`.
 
+This whole section is the Bloc form. Under Riverpod, providers are the dependency-injection container instead: there is no `injection.dart` and no `register<Feature>Feature()` functions. The equivalent wiring — one `Provider` per data source, repository and use case — lives in `superpowers-flutter:riverpod`.
+
 ## Detecting project options
 
 Before writing code for a feature, read `pubspec.yaml`:
@@ -246,6 +249,9 @@ Before writing code for a feature, read `pubspec.yaml`:
 | no `fpdart` | Use `Result<T>` from `lib/core/error/result.dart` |
 | `freezed` | Allowed for states/models; not required |
 | `injectable` | Follow it if already used; otherwise register by hand as above |
+| `flutter_riverpod`, `hooks_riverpod`, or `riverpod_annotation` | Use `superpowers-flutter:riverpod` for state management; providers replace get_it for dependency injection |
+| `flutter_bloc` | Use `superpowers-flutter:bloc` for state management, with get_it as described above |
+| neither Riverpod nor Bloc package | Propose Bloc, the plugin's default |
 
 ## New Feature Checklist
 
@@ -253,7 +259,7 @@ Before writing code for a feature, read `pubspec.yaml`:
 2. `data/models`, `data/datasources`, `data/repositories/*_impl.dart` — with unit tests mocking the data source.
 3. `presentation/bloc` or `cubit` — with `blocTest`.
 4. `presentation/pages`, `presentation/widgets` — with widget tests.
-5. `<feature>_injection.dart` registered in `configureDependencies()`.
+5. `<feature>_injection.dart` registered in `configureDependencies()` (Bloc/get_it), or `<feature>_providers.dart` (Riverpod — see `superpowers-flutter:riverpod`).
 6. Route added (go-router / auto-route skill).
 7. `flutter analyze` clean, `flutter test` green.
 

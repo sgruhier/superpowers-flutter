@@ -40,9 +40,9 @@ Opinions baked in:
   (kept as-is only where already needed by Claude Code on Windows).
 - Version-bump tooling, release notes, multi-platform docs.
 - Deprecated `commands/` from the Ruby fork.
-- Riverpod, Provider, GetX, or any non-Bloc state management.
+- Provider, GetX, or any state management outside Bloc and Riverpod.
 
-## Skill inventory (31)
+## Skill inventory (32)
 
 ### A. Process skills — copied from superpowers-ruby, renamed only (18)
 
@@ -90,7 +90,7 @@ brakeman, sandi-metz-rules, 37signals-style, hwc-forms-validation,
 hwc-media-content, hwc-navigation-content, hwc-realtime-streaming,
 hwc-stimulus-fundamentals, hwc-ux-feedback, using-sqlite-worktrees.
 
-### D. New Flutter skills (11)
+### D. New Flutter skills (12)
 
 Each is one `SKILL.md` with frontmatter `name` (== directory name) and a
 `description` written as a trigger ("Use when …"). Length target 100–300
@@ -109,6 +109,7 @@ lines, following the Ruby fork's density. `references/` only where listed.
 | `fpdart` | Domain/data code when `fpdart` is in pubspec | `Either<Failure, T>` for use cases and repos; `TaskEither` for async; `Option` only at boundaries. Sealed `Failure` hierarchy in `lib/core/error/`. Mapping exceptions to `Failure` once, in data layer. Consuming in Bloc with `fold` / pattern matching. When not to use it (UI code, simple value returns). |
 | `flutter-upgrade` | Bumping Flutter/Dart SDK or a major package | Steps: `flutter --version`, `flutter upgrade`, `flutter pub outdated`, `pub upgrade --major-versions`, `dart fix --apply`, `flutter analyze`, `flutter test`. Deprecation handling. `scripts/fetch-changelogs.sh` that prints CHANGELOG sections from pub.dev for listed packages between two versions. `references/breaking-changes.md`: links to Flutter breaking-change pages per release. |
 | `dart-commit-message` | Committing | Conventional Commits. Scope = feature directory name or `core`. Body explains why. Examples for feat/fix/refactor/test/chore. No emoji. |
+| `riverpod` | Adding or changing state management, pubspec has `flutter_riverpod`/`hooks_riverpod`/`riverpod_annotation` | Mutual exclusion with `bloc`. Provider types table (`Provider`, `NotifierProvider`, `AsyncNotifierProvider`, `StreamNotifierProvider`, `FutureProvider`); `StateProvider`/`StateNotifierProvider`/`ChangeNotifierProvider` legacy. Providers as the DI container, replacing get_it. Sealed state classes and `AsyncValue`, same equality discipline as `bloc`. `Notifier`/`AsyncNotifier` examples, including the fpdart `.match(...).run()` form. Rules on `ref.watch` vs `ref.read`, `autoDispose`, `family`. `ConsumerWidget` wiring. Optional `riverpod_generator`. Testing with `ProviderContainer` overrides. |
 
 ## Repo layout
 
@@ -124,7 +125,7 @@ hooks/
   session-start        text "You have superpowers for Flutter and Dart."
   handoff-create       unchanged
   handoff-restore      unchanged
-skills/                31 directories listed above
+skills/                32 directories listed above
 tests/
   validate-skills.sh   see Testing
 docs/superpowers/specs/  this file

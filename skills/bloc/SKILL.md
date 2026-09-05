@@ -7,7 +7,7 @@ description: Use when adding or changing state management in a Flutter app — c
 
 ## Overview
 
-`flutter_bloc` is the only state-management library in this stack. Widgets render state and dispatch intents; Blocs hold logic and call use cases, or a domain repository interface directly when there's no use case to call; use cases call repositories.
+`flutter_bloc` is the default state-management library in this stack. A project uses either Bloc or Riverpod, never both — if `pubspec.yaml` has `flutter_riverpod`, `hooks_riverpod`, or `riverpod_annotation`, use `superpowers-flutter:riverpod` instead. Widgets render state and dispatch intents; Blocs hold logic and call use cases, or a domain repository interface directly when there's no use case to call; use cases call repositories.
 
 ## Cubit or Bloc?
 

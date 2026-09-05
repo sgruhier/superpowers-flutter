@@ -152,6 +152,7 @@ All available skills — invoke with the `Skill` tool using the `name` value.
 | `superpowers-flutter:dart` | When writing, reviewing, or debugging any Dart code — Effective Dart, Dart 3 features (records, patterns, sealed classes), error handling, async idioms |
 | `superpowers-flutter:flutter-clean-architecture` | When creating or restructuring a feature, adding a repository, use case, data source, or wiring dependency injection (**REQUIRED** for new features) |
 | `superpowers-flutter:bloc` | When adding or changing state management — any Bloc, Cubit, event, or state class |
+| `superpowers-flutter:riverpod` | When adding or changing state management and `flutter_riverpod`, `hooks_riverpod`, or `riverpod_annotation` is in pubspec.yaml |
 | `superpowers-flutter:flutter-widget-rules` | When writing or reviewing any widget — build size, extraction, const, keys, BuildContext safety |
 | `superpowers-flutter:flutter-analyze` | Before committing or requesting review, when analyzer warnings appear, when setting up lints |
 | `superpowers-flutter:go-router` | When working on navigation and `go_router` is in pubspec.yaml |
