@@ -10,19 +10,19 @@ Flaky tests often guess at timing with arbitrary delays. This creates race condi
 
 ```dot
 digraph when_to_use {
-    "Test uses setTimeout/sleep?" [shape=diamond];
+    "Test uses Future.delayed/sleep?" [shape=diamond];
     "Testing timing behavior?" [shape=diamond];
     "Document WHY timeout needed" [shape=box];
     "Use condition-based waiting" [shape=box];
 
-    "Test uses setTimeout/sleep?" -> "Testing timing behavior?" [label="yes"];
+    "Test uses Future.delayed/sleep?" -> "Testing timing behavior?" [label="yes"];
     "Testing timing behavior?" -> "Document WHY timeout needed" [label="yes"];
     "Testing timing behavior?" -> "Use condition-based waiting" [label="no"];
 }
 ```
 
 **Use when:**
-- Tests have arbitrary delays (`setTimeout`, `sleep`, `time.sleep()`)
+- Tests have arbitrary delays (`Future.delayed`, `sleep()`, `Timer`)
 - Tests are flaky (pass sometimes, fail under load)
 - Tests timeout when run in parallel
 - Waiting for async operations to complete
@@ -57,21 +57,24 @@ expect(result, isNotNull);
 
 ## Implementation
 
-Generic polling helper:
+Generic polling function:
 ```dart
 Future<T> waitFor<T>(
   FutureOr<T?> Function() condition, {
   String description = 'condition',
   Duration timeout = const Duration(seconds: 5),
+  Duration interval = const Duration(milliseconds: 10),
 }) async {
   final deadline = DateTime.now().add(timeout);
   while (true) {
     final result = await condition();
     if (result != null) return result;
     if (DateTime.now().isAfter(deadline)) {
-      throw TimeoutException('Timeout waiting for $description after ${timeout.inSeconds}s');
+      throw TimeoutException(
+        'Timeout after ${timeout.inSeconds}s waiting for: $description',
+      );
     }
-    await Future<void>.delayed(const Duration(milliseconds: 10)); // poll every 10ms
+    await Future<void>.delayed(interval); // poll every 10ms by default
   }
 }
 ```
@@ -80,7 +83,7 @@ See `condition-based-waiting-example.dart` in this directory for a complete impl
 
 ## Common Mistakes
 
-**❌ Polling too fast:** `setTimeout(check, 1)` - wastes CPU
+**❌ Polling too fast:** `interval: Duration(milliseconds: 1)` - wastes CPU
 **✅ Fix:** Poll every 10ms
 
 **❌ No timeout:** Loop forever if condition never met

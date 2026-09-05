@@ -64,7 +64,7 @@ Start a new session. It should open by telling you it has "superpowers for Flutt
 
 5. **test-driven-development** — Activates during implementation. Enforces RED-GREEN-REFACTOR with `flutter_test`, `bloc_test`, and `mocktail` (or `ProviderContainer` under Riverpod): write a failing test, watch it fail, write the minimal code to pass, then refactor.
 
-6. **requesting-code-review** — Activates between tasks. Dispatches the `code-reviewer` subagent against the plan and coding standards, with precisely crafted context rather than the session's full history.
+6. **requesting-code-review** — Activates between tasks. Dispatches a general-purpose subagent filled with the code-reviewer template against the plan and coding standards, with precisely crafted context rather than the session's full history.
 
 7. **finishing-a-development-branch** — Activates once all tasks are done and tests pass. Verifies the test suite, then presents options to merge, open a PR, keep, or discard the branch, and cleans up the worktree.
 

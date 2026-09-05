@@ -53,14 +53,14 @@ WorktreeManager.createSessionWorktree(projectDir, sessionId)
 ### 4. Keep Tracing Up
 **What value was passed?**
 - `projectDir = ''` (empty string!)
-- Empty string as `cwd` resolves to `process.cwd()`
+- Empty string as `workingDirectory` resolves to `Directory.current`
 - That's the source code directory!
 
 ### 5. Find Original Trigger
 **Where did empty string come from?**
-```typescript
-const context = setupCoreTest(); // Returns { tempDir: '' }
-Project.create('name', context.tempDir); // Accessed before beforeEach!
+```dart
+final context = setupCoreTest(); // Returns tempDir: ''
+Project.create('name', context.tempDir); // Accessed before setUp!
 ```
 
 ## Adding Stack Traces
@@ -96,7 +96,7 @@ If something appears during tests but you don't know which test:
 Use the bisection script `find-polluter.sh` in this directory:
 
 ```bash
-./find-polluter.sh '.git' 'test/**/*_test.rb'
+./find-polluter.sh '.git' 'test/**/*_test.dart'
 ```
 
 Runs tests one-by-one, stops at first polluter. See script for usage.
@@ -106,11 +106,11 @@ Runs tests one-by-one, stops at first polluter. See script for usage.
 **Symptom:** `.git` created in `packages/core/` (source code)
 
 **Trace chain:**
-1. `git init` runs in `process.cwd()` ← empty cwd parameter
+1. `git init` runs in `Directory.current` ← empty workingDirectory parameter
 2. WorktreeManager called with empty projectDir
 3. Session.create() passed empty string
-4. Test accessed `context.tempDir` before beforeEach
-5. setupCoreTest() returns `{ tempDir: '' }` initially
+4. Test accessed `context.tempDir` before setUp
+5. setupCoreTest() returns `tempDir: ''` initially
 
 **Root cause:** Top-level variable initialization accessing empty value
 
@@ -119,7 +119,7 @@ Runs tests one-by-one, stops at first polluter. See script for usage.
 **Also added defense-in-depth:**
 - Layer 1: Project.create() validates directory
 - Layer 2: WorkspaceManager validates not empty
-- Layer 3: NODE_ENV guard refuses git init outside tmpdir
+- Layer 3: FLUTTER_TEST guard refuses git init outside system temp
 - Layer 4: Stack trace logging before git init
 
 ## Key Principle

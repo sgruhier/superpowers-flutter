@@ -30,6 +30,10 @@ void createProject(String name, String workingDirectory) {
   if (!Directory(workingDirectory).existsSync()) {
     throw ArgumentError('workingDirectory does not exist: $workingDirectory');
   }
+  if (FileSystemEntity.typeSync(workingDirectory) !=
+      FileSystemEntityType.directory) {
+    throw ArgumentError('workingDirectory is not a directory: $workingDirectory');
+  }
   // ... proceed
 }
 ```

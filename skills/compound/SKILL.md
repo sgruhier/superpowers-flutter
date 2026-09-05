@@ -94,7 +94,7 @@ After Phase 2, optionally invoke specialized agents based on problem type:
 | `security_issue` | `security-sentinel` |
 | `database_issue` | `data-integrity-guardian` |
 | `test_failure` | `cora-test-reviewer` |
-| Code-heavy | `code-reviewer` + `code-simplicity-reviewer` |
+| Code-heavy | `superpowers-flutter:requesting-code-review` + `code-simplicity-reviewer` |
 
 ### Compact-Safe Mode
 

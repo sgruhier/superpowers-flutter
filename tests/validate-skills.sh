@@ -24,15 +24,16 @@ for dir in "$ROOT"/skills/*/; do
   [ "$fm_name" = "$name" ] || err "$name: frontmatter name is '$fm_name'"
   desc="$(sed -n '2,12p' "$f" | grep -m1 '^description:' | sed 's/^description:[[:space:]]*//')"
   [ -n "$desc" ] || err "$name: empty description"
-  for rel in $(grep -oE '(references|scripts)/[A-Za-z0-9_./-]+' "$f" | sort -u); do
-    [ -e "$dir$rel" ] || err "$name: link to missing $rel"
+  for rel in $(grep -oE '[A-Za-z0-9_./-]*(references|scripts)/[A-Za-z0-9_./-]+' "$f" | sort -u); do
+    resolved="$(python3 -c "import os,sys; print(os.path.normpath(os.path.join(sys.argv[1], sys.argv[2])))" "$dir" "$rel")"
+    [ -e "$resolved" ] || err "$name: link to missing $rel"
   done
 done
 echo "checked $count skills"
 
 # 3. No Ruby leftovers
 if [ -d "$ROOT/skills" ]; then
-  leftovers="$(grep -rnE 'superpowers-ruby|bin/rails|Minitest|Gemfile|Rails\.|config/initializers|db/schema\.rb|\bRSpec\b|```ruby' "$ROOT/skills" "$ROOT/hooks" "$ROOT/agents" 2>/dev/null || true)"
+  leftovers="$(grep -rnE 'superpowers-ruby|bin/rails|Minitest|Gemfile|Rails\.|config/initializers|db/schema\.rb|\bRSpec\b|```ruby' "$ROOT/skills" "$ROOT/hooks" 2>/dev/null || true)"
   [ -z "$leftovers" ] || err "Ruby leftovers:
 $leftovers"
 fi
