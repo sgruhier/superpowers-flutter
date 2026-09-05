@@ -11,7 +11,7 @@ Each layer of the clean-architecture, feature-first structure gets a different k
 | domain | `lib/features/<f>/domain/` | pure unit | `flutter_test` (or `test`) | repository interfaces only |
 | data | `lib/features/<f>/data/` | unit | `flutter_test` + `mocktail` | data sources (HTTP client, DB, storage) |
 | presentation / logic | `lib/features/<f>/presentation/{bloc,cubit}/` | `blocTest` (Bloc) or `ProviderContainer` overrides (Riverpod) | `bloc_test` + `mocktail` (Bloc) or `flutter_riverpod` + `mocktail` (Riverpod) | use cases, or the repository interface when the Bloc/notifier depends on one directly |
-| presentation / UI | `lib/features/<f>/presentation/{pages,widgets}/` | widget test | `flutter_test` + `mocktail` | Bloc/Cubit |
+| presentation / UI | `lib/features/<f>/presentation/{pages,widgets}/` | widget test | `flutter_test` + `mocktail` | Bloc/Cubit, or providers via `ProviderScope` overrides |
 | core | `lib/core/` | unit | `flutter_test` | as needed |
 
 Test files mirror `lib/`, so the path alone tells you where a test belongs. `lib/features/auth/domain/usecases/sign_in.dart` maps to `test/features/auth/domain/usecases/sign_in_test.dart`, with the same directory structure repeated for data, presentation, and core.
@@ -153,6 +153,8 @@ testWidgets('tapping submit adds LoginSubmitted', (tester) async {
   verify(() => bloc.add(const LoginSubmitted())).called(1);
 });
 ```
+
+Under Riverpod there's no `BlocProvider.value` to inject a mock into: wrap the tree in `ProviderScope(overrides: [...], child: ...)` and override the provider the widget's notifier depends on, same as in a logic test — see `superpowers-flutter:riverpod`.
 
 Call `pump()` after any state change that should trigger a rebuild, and reach for `pumpAndSettle()` only when an animation or transition genuinely needs to finish before the assertion — using it by default just hides timing bugs. Prefer finding interactive elements by `Key` (stable across copy changes) and finding what the user reads by text. Always wrap the widget under test in a `MaterialApp` (or the app's actual router/theme shell), since `Theme.of` and `Navigator.of` throw without an ancestor that provides them.
 

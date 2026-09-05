@@ -25,7 +25,7 @@ Widgets render state and dispatch intents; Notifiers hold logic and call use cas
 
 ## Providers as dependency injection
 
-One `Provider` per data source, per repository and per use case, each reading its dependencies with `ref.watch`. This is the direct equivalent of the get_it registration in `superpowers-flutter:flutter-clean-architecture`, one binding at a time instead of one function:
+One `Provider` per data source, per repository and per use case, each reading its dependencies with `ref.watch`. This is the direct equivalent of the get_it registration in `superpowers-flutter:flutter-clean-architecture`, one binding at a time instead of one function. These are app-scoped — the same lifetime as a get_it singleton — so none of them takes `.autoDispose` (see Rule 6):
 
 ```dart
 final httpClientProvider = Provider<http.Client>((ref) => http.Client());
@@ -102,12 +102,17 @@ class AuthNotifier extends Notifier<AuthState> {
     // AuthRepository.signOut is a single pass-through call with no logic of its
     // own — no use case earns its place, so the notifier depends on the
     // repository provider directly instead (see Providers as DI, rule 4).
-    await ref.read(authRepositoryProvider).signOut();
-    state = const AuthInitial();
+    final result = await ref.read(authRepositoryProvider).signOut();
+    state = switch (result) {
+      Ok() => const AuthInitial(),
+      Err(:final failure) => AuthError(failure),
+    };
   }
 }
 
-final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
+// Screen-scoped — cleared once the last widget watching auth state unmounts
+// — so, per Rule 6, this one does take `.autoDispose`.
+final authNotifierProvider = NotifierProvider.autoDispose<AuthNotifier, AuthState>(AuthNotifier.new);
 ```
 
 `ref` is available directly on the notifier, unlike in a `Provider` callback where it's a parameter.
@@ -128,7 +133,7 @@ Nothing runs until `.run()`. The two branches of `match` build the states; the a
 
 ## Writing an AsyncNotifier
 
-`build()` awaits a use case and returns the unwrapped value; a mutating method sets `state = const AsyncValue.loading()` and then resolves it, either with an explicit `Ok`/`Err` switch or `AsyncValue.guard`.
+`build()` awaits a use case and returns the unwrapped value. The profile is parameterised by a user id, so the provider is a `.family` (Rule 7) — and, being screen-scoped, an `.autoDispose` one too (Rule 6). Refreshing calls `ref.invalidateSelf()` and awaits the notifier's own `future` rather than re-running the same `Ok`/`Err` switch as `build()` by hand:
 
 ```dart
 class ProfileNotifier extends AsyncNotifier<User> {
@@ -145,23 +150,17 @@ class ProfileNotifier extends AsyncNotifier<User> {
   }
 
   Future<void> refresh() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final result = await ref.read(getProfileProvider)(userId);
-      return switch (result) {
-        Ok(:final value) => value,
-        Err(:final failure) => throw failure,
-      };
-    });
+    ref.invalidateSelf();
+    await future;
   }
 }
 
-final profileNotifierProvider = AsyncNotifierProvider<ProfileNotifier, User>(
-  () => ProfileNotifier('1'),
+final profileNotifierProvider = AsyncNotifierProvider.autoDispose.family<ProfileNotifier, User, String>(
+  ProfileNotifier.new,
 );
 ```
 
-`build()` throws the `Failure` on `Err` rather than returning it: a thrown error inside `build`/`AsyncValue.guard` is how `AsyncValue<User>` becomes an `AsyncError` — there's no separate error state to construct by hand. `build` uses `ref.watch` to keep reacting to its dependencies; `refresh` uses `ref.read` because it runs from a callback, not from `build`.
+`build()` throws the `Failure` on `Err` rather than returning it: a thrown error inside `build` is how `AsyncValue<User>` becomes an `AsyncError` — there's no separate error state to construct by hand. `build` uses `ref.watch` to keep reacting to its dependencies. `refresh` invalidates the provider and awaits its own `.future` (a `Refreshable<Future<User>>` every `AsyncNotifier` exposes) to re-run `build`, instead of duplicating its `Ok`/`Err` switch; `ref.invalidateSelf()` re-runs `build()` for the *same* family argument the notifier was created with — `.family`'s job is threading that argument through the constructor once, at creation, not on every call.
 
 ## Rules
 
@@ -222,23 +221,40 @@ class AuthPage extends ConsumerWidget {
 }
 ```
 
-Rendering an `AsyncValue` with `.when`, and narrowing a rebuild with `select`:
+Narrowing a rebuild with `select` only pays off when the widget doing the narrowing is the one that would otherwise rebuild. Watching a provider unqualified anywhere in the same widget defeats it — that widget already rebuilds on every change, `select` or not. So `ProfilePane` below selects the *status* (`isLoading`/`hasError`), which stays put across a data-only change, and leaves the `email` field itself to a separate leaf widget below it, `_ProfileEmail`, whose own `select` is the only thing standing between it and a change to some other field on `User`:
 
 ```dart
 class ProfilePane extends ConsumerWidget {
-  const ProfilePane({super.key});
+  const ProfilePane({super.key, required this.userId});
+  final String userId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final email = ref.watch(profileNotifierProvider.select((value) => value.value?.email));
-    return ref.watch(profileNotifierProvider).when(
-          data: (user) => Text(email ?? user.email),
-          loading: () => const CircularProgressIndicator(),
-          error: (error, stackTrace) => ElevatedButton(
-            onPressed: () => ref.read(profileNotifierProvider.notifier).refresh(),
-            child: const Text('Retry'),
-          ),
-        );
+    final isLoading = ref.watch(profileNotifierProvider(userId).select((value) => value.isLoading));
+    final hasError = ref.watch(profileNotifierProvider(userId).select((value) => value.hasError));
+
+    if (isLoading) return const CircularProgressIndicator();
+    if (hasError) {
+      return ElevatedButton(
+        onPressed: () => ref.read(profileNotifierProvider(userId).notifier).refresh(),
+        child: const Text('Retry'),
+      );
+    }
+    return _ProfileEmail(userId: userId);
+  }
+}
+
+// Narrowed further: only rebuilds when `email` changes. A change to any
+// other field on User (name, etc.) leaves both this widget and ProfilePane
+// above untouched.
+class _ProfileEmail extends ConsumerWidget {
+  const _ProfileEmail({required this.userId});
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final email = ref.watch(profileNotifierProvider(userId).select((value) => value.value?.email));
+    return Text(email ?? '');
   }
 }
 ```
@@ -300,12 +316,12 @@ void main() {
 
 `fireImmediately: true` captures the initial state too, so the asserted list reads like a `blocTest`'s `expect`: every state in order, initial state included.
 
-For an `AsyncNotifier`, await its first value with the provider's `.future` instead of reading `state` directly:
+For an `AsyncNotifier`, await its first value with the provider's `.future` instead of reading `state` directly — calling a `.family` provider with its argument, exactly as the widget does:
 
 ```dart
 test('loads the profile on first read', () async {
   when(() => getProfile('1')).thenAnswer((_) async => const Ok(User(id: '1', email: 'a@b.c')));
-  final user = await container.read(profileNotifierProvider.future);
+  final user = await container.read(profileNotifierProvider('1').future);
   expect(user, const User(id: '1', email: 'a@b.c'));
 });
 ```
@@ -321,7 +337,7 @@ await tester.pumpWidget(
 );
 ```
 
-See `superpowers-flutter:test-driven-development` for which layer gets which kind of test; only the presentation-logic row changes shape under Riverpod.
+See `superpowers-flutter:test-driven-development` for which layer gets which kind of test; the presentation-logic and presentation-UI rows both change shape under Riverpod — `ProviderContainer` overrides in place of `blocTest`, `ProviderScope` overrides in place of `BlocProvider.value`.
 
 ## Common mistakes
 

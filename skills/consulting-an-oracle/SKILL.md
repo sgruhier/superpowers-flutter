@@ -54,7 +54,7 @@ Run these in parallel and capture output:
 flutter --version
 dart --version
 cat pubspec.yaml
-test -f pubspec.lock && grep -E "^\s+(go_router|auto_route|fpdart|flutter_bloc|bloc_test|get_it|freezed|injectable|build_runner|json_serializable) " pubspec.lock
+test -f pubspec.lock && grep -E "^\s+(go_router|auto_route|fpdart|flutter_bloc|bloc_test|get_it|flutter_riverpod|hooks_riverpod|riverpod_annotation|riverpod_generator|freezed|injectable|build_runner|json_serializable) " pubspec.lock
 git status --porcelain -- '*.g.dart' '*.gr.dart' '*.freezed.dart'
 flutter doctor -v
 test -f ios/Podfile.lock && grep -c "^  - " ios/Podfile.lock

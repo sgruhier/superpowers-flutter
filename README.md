@@ -6,9 +6,9 @@ A Flutter/Dart-focused fork of [obra/superpowers](https://github.com/obra/superp
 
 - **Bloc / Cubit** by default; **Riverpod** supported, selected by reading `pubspec.yaml`
 - **Clean architecture, feature-first**: `lib/features/<feature>/{data,domain,presentation}` + `lib/core`
-- **get_it** registered by hand
+- **get_it** registered by hand (Bloc); providers as the DI container, no get_it (Riverpod)
 - **Effective Dart**, Dart 3 (records, patterns, sealed classes), no mandatory codegen
-- **flutter_test + bloc_test + mocktail**
+- **flutter_test + bloc_test + mocktail** (Bloc); **flutter_test + flutter_riverpod (`ProviderContainer`) + mocktail** (Riverpod)
 - **go_router or auto_route**, detected from `pubspec.yaml`
 - **fpdart** optional, detected from `pubspec.yaml`
 
