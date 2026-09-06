@@ -137,6 +137,15 @@ Skills live directly in this repository.
 /plugin update superpowers-flutter
 ```
 
+## Tracking upstream
+
+The 14 process skills come from [obra/superpowers](https://github.com/obra/superpowers); `UPSTREAM_VERSION` records the tag they were last rebased on. A weekly GitHub Action (`.github/workflows/upstream-check.yml`) opens an issue when obra publishes a newer tag, with a per-skill summary of what changed in the skills this plugin carries. Run it locally with:
+
+```
+scripts/upstream-diff.sh            # UPSTREAM_VERSION -> latest tag
+scripts/upstream-diff.sh v6.3.0 v6.4.0
+```
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.

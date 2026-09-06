@@ -1,0 +1,60 @@
+# Weekly: has obra/superpowers published a tag newer than UPSTREAM_VERSION?
+# If so, diff the skills and hooks this plugin carries and open one issue
+# per upstream tag with the summary; the full diff is a workflow artifact.
+name: upstream-check
+on:
+  schedule:
+    - cron: '0 8 * * 1'   # Mondays 08:00 UTC
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: tags
+        run: |
+          echo "old=$(cat UPSTREAM_VERSION)" >> "$GITHUB_OUTPUT"
+          echo "new=$(git ls-remote --tags --refs https://github.com/obra/superpowers.git 'v*' | awk -F/ '{print $NF}' | sort -V | tail -1)" >> "$GITHUB_OUTPUT"
+      - name: Nothing new
+        if: steps.tags.outputs.old == steps.tags.outputs.new
+        run: echo "upstream is at ${{ steps.tags.outputs.new }}, same as UPSTREAM_VERSION"
+      - name: Diff shared skills
+        if: steps.tags.outputs.old != steps.tags.outputs.new
+        id: diff
+        run: |
+          set +e
+          OUT=upstream.diff scripts/upstream-diff.sh "${{ steps.tags.outputs.old }}" "${{ steps.tags.outputs.new }}" > summary.txt
+          echo "changed=$?" >> "$GITHUB_OUTPUT"
+          cat summary.txt
+      - uses: actions/upload-artifact@v4
+        if: steps.diff.outputs.changed == '1'
+        with:
+          name: upstream-diff
+          path: upstream.diff
+      - name: Open issue once per tag
+        if: steps.tags.outputs.old != steps.tags.outputs.new
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEW: ${{ steps.tags.outputs.new }}
+          OLD: ${{ steps.tags.outputs.old }}
+        run: |
+          title="Upstream superpowers $NEW released"
+          if [ "$(gh issue list --state all --search "in:title \"$title\"" --json number --jq length)" != "0" ]; then
+            echo "issue for $NEW already exists"; exit 0
+          fi
+          {
+            echo "obra/superpowers moved from \`$OLD\` (our base, see \`UPSTREAM_VERSION\`) to \`$NEW\`."
+            echo; echo "Release notes: https://github.com/obra/superpowers/releases/tag/$NEW"; echo
+            echo "What changed in the skills and hooks this plugin carries:"; echo
+            echo '```'; cat summary.txt; echo '```'; echo
+            if [ "${{ steps.diff.outputs.changed }}" = "1" ]; then
+              echo "Full diff: the \`upstream-diff\` artifact on this workflow run."; echo
+              echo "To port: \`scripts/upstream-diff.sh $OLD $NEW\` locally, apply what matters to the 10 verbatim skills and re-merge the 4 Flutter-adapted ones (test-driven-development, using-git-worktrees, systematic-debugging, using-superpowers), then bump \`UPSTREAM_VERSION\` and the plugin version."
+            else
+              echo "Nothing we carry changed — bump \`UPSTREAM_VERSION\` to \`$NEW\` and close."
+            fi
+          } > body.md
+          gh issue create --title "$title" --body-file body.md --label upstream 2>/dev/null || gh issue create --title "$title" --body-file body.md
