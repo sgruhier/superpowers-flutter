@@ -103,6 +103,8 @@ class ProfileCubit extends Cubit<ProfileState> {
 
 ## Writing a Bloc
 
+`extends Bloc<...>` below is the framework default. If the project defines its own base class (`SafeBloc`/`SafeCubit`), extend that instead — see Rules.
+
 ```dart
 sealed class SearchState extends Equatable {
   const SearchState();

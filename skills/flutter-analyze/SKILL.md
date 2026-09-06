@@ -19,10 +19,12 @@ Static analysis is the first reviewer. The bar is zero issues from `flutter anal
 
 ## Workflow
 
+If the project ships its own verification skill or command (`.claude/skills/`, `.claude/commands/` — for example a `/verify-mobile`), use that instead of this sequence.
+
 If `.fvmrc` or `.fvm/` exists, prefix every command below with `fvm`.
 
 ```bash
-dart format .                 # formatting is not negotiable
+dart format .                 # formatting is not negotiable; prefix with fvm if .fvmrc exists
 flutter analyze               # list issues
 dart fix --dry-run            # preview mechanical fixes
 dart fix --apply              # apply them

@@ -7,7 +7,7 @@ description: Use when creating or restructuring a Flutter feature, adding a repo
 
 ## Overview
 
-Feature-first layout, three layers per feature, dependencies point inward. Presentation depends on domain. Data depends on domain. Domain depends on nothing.
+Feature-first layout for new projects; existing projects keep their own — see the next section. Three layers per feature, dependencies point inward. Presentation depends on domain. Data depends on domain. Domain depends on nothing.
 
 This is the layout for a new project, or a migration the owner explicitly asked for. Most work happens in an existing codebase — read the next section first.
 
@@ -285,7 +285,7 @@ For this layout only — an existing project with its own dominant layout follow
 2. `data/models`, `data/datasources`, `data/repositories/*_impl.dart` — with unit tests mocking the data source.
 3. `presentation/bloc` or `cubit` — with `blocTest`.
 4. `presentation/pages`, `presentation/widgets` — with widget tests.
-5. `<feature>_injection.dart` registered in `configureDependencies()` (Bloc/get_it), or `<feature>_providers.dart` (Riverpod — see `superpowers-flutter:riverpod`).
+5. `<feature>_injection.dart` registered in `configureDependencies()` (Bloc/get_it), or under `injectable`, annotate and regenerate, or `<feature>_providers.dart` (Riverpod — see `superpowers-flutter:riverpod`).
 6. Route added (go-router / auto-route skill).
 7. `flutter analyze` clean, `flutter test` green.
 
