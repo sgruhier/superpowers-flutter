@@ -81,6 +81,8 @@ Name events in past tense from the user's point of view (`SearchQueryChanged`, `
 
 ## Writing a Cubit
 
+`extends Cubit<...>` below is the framework default. If the project defines its own base class (`SafeBloc`/`SafeCubit`), extend that instead — see Rules.
+
 ```dart
 class ProfileCubit extends Cubit<ProfileState> {
   ProfileCubit({required GetProfile getProfile})
@@ -163,6 +165,7 @@ EventTransformer<T> debounce<T>(Duration d) => (events, mapper) => events.deboun
 5. Subscriptions (`Stream.listen`) are stored and cancelled in `close()`.
 6. Never call another Bloc from a Bloc. Coordinate in the widget tree with `BlocListener`, or share a domain stream.
 7. Never `Future` in the constructor; expose an explicit `load()`.
+8. If the project defines its own base class (`SafeBloc`/`SafeCubit`) or a lint enforces it, extend that, never `Bloc`/`Cubit` directly. Grep before writing: `grep -rn "extends \(Bloc\|Cubit\)<" lib | head`.
 
 ## Widget Wiring
 

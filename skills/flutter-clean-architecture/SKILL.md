@@ -9,6 +9,28 @@ description: Use when creating or restructuring a Flutter feature, adding a repo
 
 Feature-first layout, three layers per feature, dependencies point inward. Presentation depends on domain. Data depends on domain. Domain depends on nothing.
 
+This is the layout for a new project, or a migration the owner explicitly asked for. Most work happens in an existing codebase — read the next section first.
+
+## Existing codebase first
+
+Before proposing any structure: read `CLAUDE.md` (and `CONTEXT.md`, `docs/adr/` if present), `pubspec.yaml`, and run `tree lib -L 2`. If a dominant layout already exists, mirror it exactly for the new feature. Never introduce a second layout beside the existing one — the layout below applies only to a new project, or an existing one when the owner explicitly asks for a migration to it.
+
+Recognise the common layouts and how a new feature is added in each:
+
+| Layout | New feature `<f>` goes in |
+|---|---|
+| Feature-first clean (prescribed below) | `lib/features/<f>/{data,domain,presentation}/` |
+| Very Good Ventures style | `lib/<f>/{bloc\|cubit,view,widgets}/`, model in flat `lib/models/`, repository in flat `lib/repositories/` |
+| Layer-first | `lib/{data,domain,presentation}/<f>/` |
+
+If the project defines its own base classes — a `SafeBloc`/`SafeCubit`, a base page widget — extend those, never the raw framework class. Find the convention with `grep -rn "extends \(Bloc\|Cubit\)<" lib | head`.
+
+Tooling follows the project, not this skill: if `.fvmrc` or `.fvm/` exists, prefix every `flutter`/`dart` command with `fvm`. If `custom_lint` is a dev dependency, run `dart run custom_lint` alongside `flutter analyze` — analyze does not run it. If the project ships its own skills or commands for verification, test scaffolding, codegen, or review (`.claude/skills/`, `.claude/commands/`), use those instead of this plugin's generic commands.
+
+DI and codegen follow whatever is already wired: if `injectable` is present (`injection.config.dart`), annotate with `@injectable` and regenerate — never hand-register. If models use `json_serializable`, follow it — never hand-write `fromJson` beside generated ones. Generated files are never edited by hand.
+
+What still applies everywhere: the layer discipline — no business logic in widgets, a Bloc depends on a repository or use case, exceptions mapped once — holds wherever the existing code lets it. What does not follow automatically: do not retrofit `Result<T>`, `Failure`, or an entity-versus-model split onto a codebase that has none — match the neighbours. That split is a migration, and a migration is the owner's call, not a default.
+
 ## Directory Layout
 
 ```
@@ -248,12 +270,16 @@ Before writing code for a feature, read `pubspec.yaml`:
 | `fpdart` | Return `TaskEither<Failure, T>` from repositories and use cases (`superpowers-flutter:fpdart`); do not create `result.dart` |
 | no `fpdart` | Use `Result<T>` from `lib/core/error/result.dart` |
 | `freezed` | Allowed for states/models; not required |
-| `injectable` | Follow it if already used; otherwise register by hand as above |
+| `injectable` | Follow it: annotate with `@injectable`/`@module` and regenerate; never hand-register (see Existing codebase first) |
 | `flutter_riverpod`, `hooks_riverpod`, or `riverpod_annotation` | Use `superpowers-flutter:riverpod` for state management; providers replace get_it for dependency injection |
 | `flutter_bloc` | Use `superpowers-flutter:bloc` for state management, with get_it as described above |
 | neither Riverpod nor Bloc package | Propose Bloc, the plugin's default |
+| `.fvmrc` or `.fvm/` present | Prefix every `flutter`/`dart` command with `fvm` |
+| `custom_lint` in `dev_dependencies` | Run `dart run custom_lint` alongside `flutter analyze`; analyze does not run it |
 
 ## New Feature Checklist
+
+For this layout only — an existing project with its own dominant layout follows that layout's equivalent steps instead (see Existing codebase first).
 
 1. `domain/entities`, `domain/repositories` (abstract), `domain/usecases` — with unit tests.
 2. `data/models`, `data/datasources`, `data/repositories/*_impl.dart` — with unit tests mocking the data source.

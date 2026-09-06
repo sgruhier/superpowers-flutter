@@ -19,12 +19,15 @@ Static analysis is the first reviewer. The bar is zero issues from `flutter anal
 
 ## Workflow
 
+If `.fvmrc` or `.fvm/` exists, prefix every command below with `fvm`.
+
 ```bash
 dart format .                 # formatting is not negotiable
 flutter analyze               # list issues
 dart fix --dry-run            # preview mechanical fixes
 dart fix --apply              # apply them
 flutter analyze               # must print "No issues found!"
+dart run custom_lint          # if custom_lint is a dev dependency — analyze does not run it
 ```
 
 Run this sequence before `superpowers-flutter:requesting-code-review` and before every commit. Add it to CI:
@@ -67,3 +70,4 @@ Columns: severity, message, `file:line:col`, rule name. Group by rule name to de
 | Running analyze only in CI | run locally before commit |
 | Not excluding generated files | add globs, otherwise `dart fix` edits them |
 | `flutter analyze` on a pure Dart package | `dart analyze` |
+| Running only `flutter analyze` in a project with `custom_lint` | also run `dart run custom_lint` (or `fvm dart run custom_lint`) — analyze does not run it |
