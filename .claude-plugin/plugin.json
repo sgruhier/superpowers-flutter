@@ -1,6 +1,6 @@
 {
   "name": "superpowers-flutter",
-  "description": "Flutter/Dart skills library for Claude Code: TDD with flutter_test and bloc_test, Bloc/Cubit, clean architecture, Effective Dart, go_router, auto_route, fpdart, and proven development workflows based on Jesse Vincent's superpowers",
+  "description": "Flutter/Dart skills library for Claude Code: TDD with flutter_test and bloc_test, Bloc/Cubit or Riverpod, clean architecture, Effective Dart, go_router, auto_route, fpdart, and proven development workflows based on Jesse Vincent's superpowers",
   "version": "0.1.0",
   "author": { "name": "Sébastien Gruhier", "email": "sgruhier@gmail.com" },
   "homepage": "https://github.com/sgruhier/superpowers-flutter",
