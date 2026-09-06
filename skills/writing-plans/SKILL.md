@@ -148,6 +148,8 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
+**4. Spec contradictions:** Coverage is not enough — walk the spec's decisions (its Decisions table, architecture choices, listed events and endpoints) and confirm no task quietly overrides one. A plan that picks a different endpoint, drops a listed analytics event, or changes an approach the spec chose has found a real problem: say so explicitly, update the spec first so both documents agree, and only then plan against the new decision. Executors read both; a plan that contradicts its spec makes them guess which one wins.
+
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
 ## Execution Handoff

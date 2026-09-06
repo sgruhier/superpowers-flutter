@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 - 2026-09-06
+
+- `writing-plans` self-review gains a spec-contradiction check: a task that overrides a spec decision must say so and update the spec first, so executors never have to guess which document wins.
+
 ## 0.2.0 - 2026-09-06
 
 - New `riverpod` skill, selected from pubspec.yaml; providers replace get_it under Riverpod.

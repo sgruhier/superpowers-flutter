@@ -6,7 +6,7 @@
     {
       "name": "superpowers-flutter",
       "description": "Flutter/Dart skills library for Claude Code: TDD, Bloc/Cubit or Riverpod, clean architecture, Effective Dart, routing, fpdart, and proven development workflows",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "source": "./",
       "author": { "name": "Sébastien Gruhier", "email": "sgruhier@gmail.com" }
     }
