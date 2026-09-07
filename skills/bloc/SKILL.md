@@ -167,6 +167,7 @@ EventTransformer<T> debounce<T>(Duration d) => (events, mapper) => events.deboun
 5. Subscriptions (`Stream.listen`) are stored and cancelled in `close()`.
 6. Never call another Bloc from a Bloc. Coordinate in the widget tree with `BlocListener`, or share a domain stream.
 7. Never `Future` in the constructor; expose an explicit `load()`.
+9. No user-facing text in a Bloc: no `t.*`, no `AppLocalizations`, no string message keys, no `context`. A state carries typed values — the `Failure` itself, an enum for a success notice — and the widget turns them into text, where locale and `BuildContext` live. A `String noticeKey` translated later by the view is the same mistake with one more hop: the Bloc still chose the words. Sealed notice type when one state must carry either a failure or an info message.
 8. If the project defines its own base class (`SafeBloc`/`SafeCubit`) or a lint enforces it, extend that, never `Bloc`/`Cubit` directly. Grep before writing: `grep -rn "extends \(Bloc\|Cubit\)<" lib | head`.
 
 ## Widget Wiring
@@ -235,6 +236,7 @@ Widget tests inject `MockBloc`/`MockCubit` from `bloc_test` with `BlocProvider.v
 
 | Mistake | Fix |
 |---|---|
+| `t.errors.network` or a `'network'` message key emitted from a Bloc | State carries the `Failure` or a notice enum; the widget translates |
 | Business logic in `build` or `onPressed` | Move to a Cubit method |
 | `setState` and a Bloc for the same data | Pick the Bloc; `setState` only for purely local UI (expanded/collapsed) |
 | God state with 20 nullable fields | Split into sealed subclasses or separate Blocs |

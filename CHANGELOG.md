@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.3 - 2026-09-07
+
+- `bloc` rule 9: no user-facing text in a Bloc — no `t.*`, no message-key strings. States carry the `Failure` or a notice enum; the widget translates.
+
 ## 0.2.2 - 2026-09-07
 
 - `flutter-clean-architecture`: style rules win over a neighbouring feature's precedent. Layout, base classes, tooling and DI follow the codebase; how new code is written follows the skills.
