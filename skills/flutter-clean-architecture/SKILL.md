@@ -31,6 +31,8 @@ DI and codegen follow whatever is already wired: if `injectable` is present (`in
 
 What still applies everywhere: the layer discipline — no business logic in widgets, a Bloc depends on a repository or use case, exceptions mapped once — holds wherever the existing code lets it. What does not follow automatically: do not retrofit `Result<T>`, `Failure`, or an entity-versus-model split onto a codebase that has none — match the neighbours. That split is a migration, and a migration is the owner's call, not a default.
 
+Style rules are the other way round. Layout, base classes, tooling and DI follow the neighbours; how new code is *written* follows this plugin's skills — the fpdart consumption chain, `Failure` carried in the state, `Option` kept out of widgets. A neighbouring feature that predates the rule is a precedent for structure, not a licence to repeat its style: write the new feature to the rule, and leave the old feature alone unless the owner asks for it to be brought up to date.
+
 ## Directory Layout
 
 ```

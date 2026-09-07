@@ -71,6 +71,34 @@ The state carries the `Failure` object, not a message string — see `ProfileErr
 
 `match` on a `TaskEither<L, R>` returns a `Task<A>` (verified against fpdart 1.2.0: `Task<A> match<A>(A Function(L l) onLeft, A Function(R r) onRight)`), so `.map(emit)` yields `Task<void>` and `.run()` executes it — nothing happens until `.run()`. The branches of `match` build states, they do not emit; `.map(emit)` performs the single emission. Emitting inside the branches is how you end up emitting twice, and forgetting `.run()` is how you end up emitting nothing at all — see Common Mistakes.
 
+Real Blocs have work to do after the await: a generation guard against a stale reload, a `_busy` flag to reset, an `isClosed` check. That work goes in the `.map`, which is the one place that runs after the result is known — it does not push the emit back into the branches:
+
+```dart
+Future<void> load(String id) async {
+  final generation = ++_generation;
+  emit(const ProfileLoading());
+  await _getProfile(id)
+      .match(ProfileError.new, ProfileLoaded.new)
+      .map((next) {
+        if (generation == _generation && !isClosed) emit(next);
+      })
+      .run();
+}
+```
+
+The chain is the rule whenever each branch produces exactly one state. When a branch has to do more than build a state — the success path triggers another async call (a silent re-fetch, a retry after a pseudo dialog), or one branch emits nothing at all — run the `TaskEither` first and match on the `Either`:
+
+```dart
+final result = await _repository.join(id).run();
+_busy = false;
+await result.match(
+  (failure) async => _rollback(failure, before),
+  (_) => _refresh(),
+);
+```
+
+Reach for this second form only for that reason. If both branches turn out to be plain constructors, it is the chain.
+
 ## Option
 
 Nullable is banned from domain signatures: entity fields, repository interface returns and parameters, use case signatures. Where a domain value may be absent, the type is `Option<T>`, not `T?`.
@@ -132,3 +160,4 @@ test('returns user on success', () async {
 | `T?` on a domain entity field, repository signature, or use case signature | `Option<T>` |
 | `.run()` called in a widget | call in the Bloc |
 | Emitting inside a `match` branch, or forgetting `.run()` | branches build the state, `.map(emit)` emits once, `.run()` executes the chain |
+| `await x.run()` then `match` with `emit` in both branches, copied from an older feature | the chain, with the post-await guard in `.map`; the older feature is a precedent for layout, not for style |

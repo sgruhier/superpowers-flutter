@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2 - 2026-09-07
+
+- `flutter-clean-architecture`: style rules win over a neighbouring feature's precedent. Layout, base classes, tooling and DI follow the codebase; how new code is written follows the skills.
+- `fpdart`: the Bloc consumption chain now shows the post-await guard (generation, `isClosed`) inside `.map`, and names the one case where `await x.run()` then `match` is right — a branch that does more than build a state.
+
 ## 0.2.1 - 2026-09-06
 
 - `writing-plans` self-review gains a spec-contradiction check: a task that overrides a spec decision must say so and update the spec first, so executors never have to guess which document wins.
