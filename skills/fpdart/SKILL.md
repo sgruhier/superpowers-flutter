@@ -86,6 +86,24 @@ Future<void> load(String id) async {
 }
 ```
 
+When the next state depends on the state *after* the await — an optimistic mutation that keeps the current detail on failure, a "load more" that appends to whatever the list is by then — the branches cannot see it yet. Then each branch returns a builder, and `.map` applies it to the re-read state. Still one emission, still nothing in the branches:
+
+```dart
+typedef _Build = FeedState Function(FeedLoaded current);
+
+await _repository
+    .feed(offset: loaded.items.length)
+    .match<_Build>(
+      (failure) => (current) => FeedNotice(current.copyWith(loadingMore: false), failure),
+      (page) => (current) => current.copyWith(items: [...current.items, ...page], loadingMore: false),
+    )
+    .map((build) {
+      final current = _loaded();
+      if (current != null && generation == _generation) emit(build(current));
+    })
+    .run();
+```
+
 The chain is the rule whenever each branch produces exactly one state. When a branch has to do more than build a state — the success path triggers another async call (a silent re-fetch, a retry after a pseudo dialog), or one branch emits nothing at all — run the `TaskEither` first and match on the `Either`:
 
 ```dart

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.4 - 2026-09-07
+
+- `fpdart`: the Bloc chain gains its "builder" form — when the next state depends on the state re-read after the await, branches return a function of the current state and `.map` applies it. Taken from the mp2ride meetups reference implementation.
+
 ## 0.2.3 - 2026-09-07
 
 - `bloc` rule 9: no user-facing text in a Bloc — no `t.*`, no message-key strings. States carry the `Failure` or a notice enum; the widget translates.
