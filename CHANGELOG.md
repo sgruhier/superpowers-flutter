@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.3.0 - 2026-10-10
+
+Process skills rebased onto obra/superpowers v7.0.0 (from v6.3.0). Upstream notes: v6.4.1, v6.4.2, v7.0.0.
+
+- `brainstorming` rewritten upstream: draws out intent before proposing, plays back what it heard, sizes the work (do it now / agree in chat / design doc), asks which how-it-gets-made choices you want to own, and replaces the spec reviewer with a builder check.
+- `executing-plans` rebuilt as Native execution: runs the whole plan inline with the SDD workspace and ledger (`task-start`/`task-done`), then one whole-branch review. No more check-ins every few tasks.
+- `writing-plans`: leaner plans that record decisions (signatures, assertions, spec values) instead of code; new Review Focus section; proportion self-review. Our spec-contradiction check is kept as item 6.
+- `subagent-driven-development`: per-plan workspaces (same basename no longer collides), `review-package` rejects empty ranges, opt-in nested controller.
+- `requesting-code-review`: `merge-base origin/main HEAD` for multi-commit ranges; reviewers judge unspecified behaviour by what a reasonable user expects. Flutter checklist kept in `code-reviewer.md`.
+- `test-driven-development`: green means the project's `flutter test` suite, not just your file; report every failure by name.
+- `systematic-debugging`: diagnostic example no longer prints the secret it checks.
+- `using-superpowers`: Claude Code and Muse tool references.
+- hooks: SessionStart survives a broken `PATH`; Windows `run-hook.cmd` finds per-user Git installs and passes exit codes.
+- Not ported: `diagnosing-superpowers` (reads superpowers session transcripts; revisit if wanted).
+
+## 0.3.0 - 2026-10-10
+
+Process skills rebased onto obra/superpowers v7.0.0 (from v6.3.0). Upstream notes: v6.4.1, v6.4.2, v7.0.0.
+
+- `brainstorming` rewritten upstream: draws out intent before proposing, plays back what it heard, sizes the work (do it now / agree in chat / design doc), asks which how-it-gets-made choices you want to own, and replaces the spec reviewer with a builder check.
+- `executing-plans` rebuilt as Native execution: runs the whole plan inline with the SDD workspace and ledger (`task-start`/`task-done`), then one whole-branch review. No more check-ins every few tasks.
+- `writing-plans`: leaner plans that record decisions (signatures, assertions, spec values) instead of code; new Review Focus section; proportion self-review. Our spec-contradiction check is kept as item 6.
+- `subagent-driven-development`: per-plan workspaces (same basename no longer collides), `review-package` rejects empty ranges, opt-in nested controller.
+- `requesting-code-review`: `merge-base origin/main HEAD` for multi-commit ranges; reviewers judge unspecified behaviour by what a reasonable user expects. Flutter checklist kept in `code-reviewer.md`.
+- `test-driven-development`: green means the project's `flutter test` suite, not just your file; report every failure by name.
+- `systematic-debugging`: diagnostic example no longer prints the secret it checks.
+- `using-superpowers`: Claude Code and Muse tool references.
+- hooks: SessionStart survives a broken `PATH`; Windows `run-hook.cmd` finds per-user Git installs and passes exit codes.
+- Not ported: `diagnosing-superpowers` (reads superpowers session transcripts; revisit if wanted).
+
 ## 0.2.4 - 2026-09-07
 
 - `fpdart`: the Bloc chain gains its "builder" form — when the next state depends on the state re-read after the await, branches return a function of the current state and `.map` applies it. Taken from the mp2ride meetups reference implementation.
