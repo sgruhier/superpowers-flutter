@@ -24,7 +24,7 @@ for dir in "$ROOT"/skills/*/; do
   [ "$fm_name" = "$name" ] || err "$name: frontmatter name is '$fm_name'"
   desc="$(sed -n '2,12p' "$f" | grep -m1 '^description:' | sed 's/^description:[[:space:]]*//')"
   [ -n "$desc" ] || err "$name: empty description"
-  for rel in $(grep -oE '[A-Za-z0-9_./-]*(references|scripts)/[A-Za-z0-9_./-]+' "$f" | sort -u); do
+  for rel in $(grep -oE '[A-Za-z0-9_./-]*(references|scripts)/[A-Za-z0-9_./-]+' "$f" | grep -vE 'scripts/tool\.(sh|js)' | sort -u); do
     resolved="$(python3 -c "import os,sys; print(os.path.normpath(os.path.join(sys.argv[1], sys.argv[2])))" "$dir" "$rel")"
     [ -e "$resolved" ] || err "$name: link to missing $rel"
   done

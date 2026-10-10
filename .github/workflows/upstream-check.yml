@@ -52,7 +52,7 @@ jobs:
             echo '```'; cat summary.txt; echo '```'; echo
             if [ "${{ steps.diff.outputs.changed }}" = "1" ]; then
               echo "Full diff: the \`upstream-diff\` artifact on this workflow run."; echo
-              echo "To port: \`scripts/upstream-diff.sh $OLD $NEW\` locally, apply what matters to the 10 verbatim skills and re-merge the 4 Flutter-adapted ones (test-driven-development, using-git-worktrees, systematic-debugging, using-superpowers), then bump \`UPSTREAM_VERSION\` and the plugin version."
+              echo "To port: \`scripts/upstream-diff.sh $OLD $NEW\` locally, copy the unchanged-by-us skills over (then rename `superpowers:` to `superpowers-flutter:`), re-apply our Flutter additions in writing-plans and requesting-code-review, and hand-merge the four Flutter-adapted skills (test-driven-development, using-git-worktrees, systematic-debugging, using-superpowers) and hooks/session-start, then bump \`UPSTREAM_VERSION\` and the plugin version."
             else
               echo "Nothing we carry changed — bump \`UPSTREAM_VERSION\` to \`$NEW\` and close."
             fi

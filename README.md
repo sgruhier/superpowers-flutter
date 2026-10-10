@@ -143,7 +143,7 @@ The 14 process skills come from [obra/superpowers](https://github.com/obra/super
 
 ```
 scripts/upstream-diff.sh            # UPSTREAM_VERSION -> latest tag
-scripts/upstream-diff.sh v6.3.0 v6.4.0
+scripts/upstream-diff.sh v7.0.0 v7.1.0
 ```
 
 ## License
