@@ -28,16 +28,9 @@ TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%S+00:00)"
 DATE_PREFIX="$(date -u +%Y-%m-%d)"
 
 # Modified files: staged + unstaged + untracked
-MODIFIED_FILES=""
-while IFS= read -r line; do
-  if [ -n "$line" ]; then
-    # Extract filename from porcelain output (skip the 3-char status prefix)
-    fname="${line:3}"
-    if [ -n "$fname" ]; then
-      MODIFIED_FILES="${MODIFIED_FILES}- ${fname}\n"
-    fi
-  fi
-done < <(git status --porcelain 2>/dev/null || true)
+# Strips the 3-char porcelain status prefix. No process substitution: run-hook.cmd
+# runs this under /bin/sh on macOS (bash 3.2 POSIX mode), which rejects `< <(...)`.
+MODIFIED_FILES="$(git status --porcelain 2>/dev/null | sed -n 's/^...\(..*\)$/- \1\\n/p' | tr -d '\n' || true)"
 
 if [ -z "$MODIFIED_FILES" ]; then
   MODIFIED_FILES="- (no uncommitted changes)\n"
