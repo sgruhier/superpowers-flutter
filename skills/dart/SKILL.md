@@ -7,7 +7,7 @@ description: Use when writing, reviewing, or debugging any Dart code — Effecti
 
 ## Overview
 
-Effective Dart is the style guide; this skill adds the Dart 3 patterns agents skip by default and the error-handling conventions used by `superpowers-flutter:flutter-clean-architecture`. Run `dart format` and `flutter analyze` on everything.
+Effective Dart is the style guide; this skill adds the Dart 3 patterns agents skip by default and the error-handling conventions used by `superpowers-flutter:flutter-clean-architecture`. Run `dart format` on the files you change and `flutter analyze` on the project.
 
 ## Effective Dart (vendored)
 

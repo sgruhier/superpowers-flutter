@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 - 2026-10-21
+
+- `using-superpowers`: rewritten without the "1% chance / YOU DO NOT HAVE A CHOICE" pressure and the Red Flags table, which made current models load skills before one-line answers and treat their own triage as rationalising. Skills still come first for real work, with the reason stated; a project's established conventions now explicitly win over a skill. Diverges from upstream on purpose: re-apply after the next rebase.
+- hooks: `session-start` no longer wraps the skill in `<EXTREMELY_IMPORTANT>`.
+- Mocking: `mocktail` stays the default, but a suite already on `mockito` keeps it (`test-driven-development`, `testing-strategy.md`, `bloc`, `riverpod`, the code-review checklist, README).
+- `flutter-analyze`, `dart`: format only the files you changed; a repo-wide `dart format .` belongs in a commit of its own.
+
 ## 0.3.0 - 2026-10-10
 
 Process skills rebased onto obra/superpowers v7.0.0 (from v6.3.0). Upstream notes: v6.4.1, v6.4.2, v7.0.0.

@@ -277,7 +277,7 @@ class Profile extends _$Profile {
 
 ## Testing
 
-`ProviderContainer` with `overrides` stands in for `ProviderScope` in a test. Override the provider the notifier actually depends on — the use case provider when one exists, the repository provider directly when it doesn't (see `AuthNotifier.signOut`) — never the concrete implementation. Mock with `mocktail`, same as everywhere else in this plugin.
+`ProviderContainer` with `overrides` stands in for `ProviderScope` in a test. Override the provider the notifier actually depends on — the use case provider when one exists, the repository provider directly when it doesn't (see `AuthNotifier.signOut`) — never the concrete implementation. Mock with the project's mocking library (`mocktail` by default), same as everywhere else in this plugin.
 
 ```dart
 class MockSignIn extends Mock implements SignIn {}

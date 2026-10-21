@@ -6,6 +6,8 @@ Which layer gets which kind of test, and what each test may touch.
 
 Each layer of the clean-architecture, feature-first structure gets a different kind of test, backed by a different package, with a different rule for what it's allowed to mock. Use the table to pick the right shape of test before you write it.
 
+The table and examples use `mocktail`. In a project whose suite already uses `mockito` (generated mocks via `@GenerateNiceMocks`), keep `mockito` and its generated mocks: one mocking library per suite matters more than which one.
+
 | Layer | Directory | Test type | Package | Mocks allowed |
 |---|---|---|---|---|
 | domain | `lib/features/<f>/domain/` | pure unit | `flutter_test` (or `test`) | repository interfaces only |

@@ -1,27 +1,21 @@
 ---
 name: using-superpowers
-description: Use when starting any conversation - establishes how to find and use skills, requiring skill invocation before ANY response including clarifying questions
+description: Use when starting any conversation - explains how to find the superpowers-flutter skills and when to load one before acting
 ---
 
 <SUBAGENT-STOP>
 If you were dispatched as a subagent to execute a specific task, ignore this skill.
 </SUBAGENT-STOP>
 
-<EXTREMELY-IMPORTANT>
-If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
-
-IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
-
-This is not negotiable. You cannot rationalize your way out of this.
-</EXTREMELY-IMPORTANT>
-
 ## The Rule
 
-**Invoke relevant or requested skills BEFORE any response or action** — including clarifying questions, exploring the codebase, or checking files. If it turns out wrong for the situation, you don't have to use it.
+Before you start a task, check the catalog below. When a skill covers what you are about to do — building or changing a feature, fixing a bug, writing tests, touching state management, committing — load it with the `Skill` tool first and follow it: the skills carry conventions and workflows you can't reconstruct from general Flutter knowledge. When the user names a skill or types its slash command, load it.
 
-**Before entering plan mode:** if you haven't already brainstormed, invoke the brainstorming skill first.
+No skill is needed for what none of them covers: answering a question about the code, a quick lookup, a one-line change. If a skill you loaded turns out not to fit, say so and set it aside.
 
-Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it has a checklist, create a todo per item.
+New features and behaviour changes go through brainstorming before planning, plan mode included: it settles intent and sizes the work, so a small change stays small.
+
+Say in one line which skill you are using and why, so your partner can redirect you early. If the skill has a checklist, track its items as todos.
 
 ## Skill Priority
 
@@ -30,24 +24,7 @@ When multiple skills apply, process skills come first — they set the approach,
 - "Let's build X" → superpowers-flutter:brainstorming first, then implementation skills.
 - "Fix this bug" → superpowers-flutter:systematic-debugging first, then domain skills.
 
-## Red Flags
-
-These thoughts mean STOP—you're rationalizing:
-
-| Thought | Reality |
-|---------|---------|
-| "This is just a simple question" | Questions are tasks. Check for skills. |
-| "I need more context first" | Skill check comes BEFORE clarifying questions. |
-| "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
-| "I can check git/files quickly" | Files lack conversation context. Check for skills. |
-| "Let me gather information first" | Skills tell you HOW to gather information. |
-| "This doesn't need a formal skill" | If a skill exists, use it. |
-| "I remember this skill" | Skills evolve. Read current version. |
-| "This doesn't count as a task" | Action = task. Check for skills. |
-| "The skill is overkill" | Simple things become complex. Use it. |
-| "I'll just do this one thing first" | Check BEFORE doing anything. |
-| "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
-| "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
+Load the skill even when you know the topic, and load it again rather than working from memory of an earlier session: knowing TDD or Bloc in general is not the same as this plugin's version of it, and the skills change between releases.
 
 ## Platform Adaptation
 
@@ -62,7 +39,7 @@ If your harness appears here, read its reference file for special instructions:
 
 ## User Instructions
 
-User instructions (CLAUDE.md, AGENTS.md, GEMINI.md, etc, direct requests) take precedence over skills, which in turn override default behavior. Only skip skill workflows or instructions when your human partner has explicitly told you to.
+User instructions (CLAUDE.md, AGENTS.md, GEMINI.md, etc, direct requests) take precedence over skills, which in turn override default behavior. The same goes for the project's established conventions: when a skill and the codebase disagree (a different mocking library, a different formatting scope), follow the project.
 
 ## Skills Catalog
 

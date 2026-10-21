@@ -27,7 +27,7 @@ Be direct. If the brief is missing something critical, say what and why.
 - **Routing:** <go_router/auto_route/none>, version `<X.Y.Z>`
 - **Functional core:** <fpdart/none>
 - **DI:** get_it, registered by hand in `lib/core/di/injection.dart`
-- **Test framework:** flutter_test + bloc_test + mocktail, run with `<command>`
+- **Test framework:** flutter_test + bloc_test + <mocking library>, run with `<command>`
 - **Codegen:** <build_runner + freezed/json_serializable/go_router_builder/auto_route_generator/none>
 - **Linter:** flutter_lints / custom `analysis_options.yaml`
 - **Target platforms:** <iOS/Android/web/desktop>, min SDK `<value>`

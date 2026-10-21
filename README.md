@@ -23,7 +23,7 @@ It starts from the moment you fire up your coding agent. As soon as it sees that
 
 Once it's teased a spec out of the conversation, it shows the design to you in chunks short enough to actually read and digest, and waits for you to approve it before doing anything else.
 
-After you've signed off on the design, your agent puts together an implementation plan clear enough for an engineer with no context on the codebase to follow — every task has exact file paths, the code to write, and how to verify it. It's built around true red/green TDD with `flutter_test`, `bloc_test`, and `mocktail` (or `ProviderContainer` under Riverpod), YAGNI, and DRY.
+After you've signed off on the design, your agent puts together an implementation plan clear enough for an engineer with no context on the codebase to follow — every task has exact file paths, the code to write, and how to verify it. It's built around true red/green TDD with `flutter_test`, `bloc_test`, and `mocktail` (or `ProviderContainer` under Riverpod; a suite already on `mockito` keeps it), YAGNI, and DRY.
 
 Next, once you say "go", it launches subagent-driven development: a fresh subagent per task, each reviewed against the plan and against code quality before the agent moves to the next one. It's not uncommon for the agent to work through a whole plan unattended, without deviating from what you approved.
 
@@ -62,7 +62,7 @@ Start a new session. It should open by telling you it has "superpowers for Flutt
 
 4. **subagent-driven-development** (or **executing-plans** without subagent support) — Activates once a plan exists. Dispatches a fresh subagent per task with two-stage review — spec compliance, then code quality — before moving to the next task.
 
-5. **test-driven-development** — Activates during implementation. Enforces RED-GREEN-REFACTOR with `flutter_test`, `bloc_test`, and `mocktail` (or `ProviderContainer` under Riverpod): write a failing test, watch it fail, write the minimal code to pass, then refactor.
+5. **test-driven-development** — Activates during implementation. Enforces RED-GREEN-REFACTOR with `flutter_test`, `bloc_test`, and `mocktail` (or `ProviderContainer` under Riverpod; a suite already on `mockito` keeps it): write a failing test, watch it fail, write the minimal code to pass, then refactor.
 
 6. **requesting-code-review** — Activates between tasks. Dispatches a general-purpose subagent filled with the code-reviewer template against the plan and coding standards, with precisely crafted context rather than the session's full history.
 

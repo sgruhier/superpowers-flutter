@@ -203,7 +203,7 @@ Scope providers at the narrowest subtree that needs them. App-wide Blocs (sessio
 
 ## Testing
 
-Every Bloc/Cubit has a `blocTest` per transition. Mock use cases with `mocktail`.
+Every Bloc/Cubit has a `blocTest` per transition. Mock use cases with the project's mocking library (`mocktail` unless the suite already uses `mockito`).
 
 ```dart
 class MockGetProfile extends Mock implements GetProfile {}

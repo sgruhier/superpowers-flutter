@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix in a Flutter or Dart project, before writing implementation code — RED-GREEN-REFACTOR with flutter_test, bloc_test and mocktail
+description: Use when implementing any feature or bugfix in a Flutter or Dart project, before writing implementation code — RED-GREEN-REFACTOR with flutter_test, bloc_test and the project's mocking library (mocktail by default)
 ---
 
 # Test-Driven Development (TDD)

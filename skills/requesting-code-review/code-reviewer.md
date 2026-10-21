@@ -96,7 +96,7 @@ Subagent (general-purpose):
     - Layer rule: files under `domain/` import nothing from `package:flutter` or from `data/`/`presentation/`. `data/` implements interfaces declared in `domain/`. Widgets talk to `domain/` only through a Bloc or Cubit.
     - Bloc rules: business logic lives in Bloc/Cubit or use cases, never in `build`. States and events are sealed classes. No `emit` after `close`. Blocs depend on use cases, not repositories.
     - Widget rules: `build` under 40 lines; extraction into widget classes, not helper methods; `const` constructors where possible; no `BuildContext` used across an `await` without a `mounted` check.
-    - Tests: every Bloc/Cubit has a `blocTest`; every use case has a unit test; changed widgets have a widget test. Mocks use `mocktail`.
+    - Tests: every Bloc/Cubit has a `blocTest`; every use case has a unit test; changed widgets have a widget test. Mocks use the suite's one mocking library (`mocktail` by default, `mockito` where the project already uses it); flag a second library mixed in, not the choice itself.
     - Analysis: `flutter analyze` reports zero issues.
 
     ## Calibration

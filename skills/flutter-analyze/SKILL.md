@@ -24,13 +24,15 @@ If the project ships its own verification skill or command (`.claude/skills/`, `
 If `.fvmrc` or `.fvm/` exists, prefix every command below with `fvm`.
 
 ```bash
-dart format .                 # formatting is not negotiable; prefix with fvm if .fvmrc exists
+dart format <changed files>   # only the .dart files you touched
 flutter analyze               # list issues
 dart fix --dry-run            # preview mechanical fixes
 dart fix --apply              # apply them
 flutter analyze               # must print "No issues found!"
 dart run custom_lint          # if custom_lint is a dev dependency — analyze does not run it
 ```
+
+Format only the files you changed: on a codebase last formatted by an older `dart format`, a repo-wide `dart format .` rewrites hundreds of untouched files and buries the real diff. Reformat the whole project only as a commit of its own (`chore: run dart format`).
 
 Run this sequence before `superpowers-flutter:requesting-code-review` and before every commit. Add it to CI:
 
